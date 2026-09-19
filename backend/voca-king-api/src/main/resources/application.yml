@@ -1,0 +1,99 @@
+# ==============================================================================
+# VOCA KING API - 애플리케이션 설정
+# ==============================================================================
+
+spring:
+  application:
+    name: voca-king-api
+
+  # 프로파일 설정 (dev, prod)
+  profiles:
+    active: dev
+
+  # JPA 설정
+  jpa:
+    hibernate:
+      ddl-auto: update  # 개발: update, 운영: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  # 데이터 초기화 (schema.sql, data.sql)
+  sql:
+    init:
+      mode: never  # always: 매번 실행, never: 실행 안함
+
+---
+# ==============================================================================
+# 개발 환경 (dev) - MySQL
+# ==============================================================================
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  # MySQL 설정 (로컬 개발용)
+  datasource:
+    url: jdbc:mysql://localhost:3306/vocaking?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: vocaking
+    password: vocaking123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
+# JWT 설정
+jwt:
+  secret: dev-secret-key-must-be-at-least-256-bits-long-for-hs256-algorithm
+  expiration: 86400000  # 24시간 (밀리초)
+
+# Swagger 설정
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+# 로깅 설정
+logging:
+  level:
+    com.vocaking: DEBUG
+    org.springframework.security: DEBUG
+
+---
+# ==============================================================================
+# 운영 환경 (prod)
+# ==============================================================================
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  # MySQL 설정 (환경변수로 주입)
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+# JWT 설정 (환경변수로 주입)
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000
+
+# 로깅 설정
+logging:
+  level:
+    com.vocaking: INFO
+    org.springframework.security: WARN

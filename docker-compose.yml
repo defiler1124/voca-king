@@ -1,0 +1,33 @@
+# ==============================================================================
+# VOCA KING 개발 환경 Docker Compose
+# ==============================================================================
+# 사용법:
+#   docker-compose up -d      # 컨테이너 시작
+#   docker-compose down       # 컨테이너 중지
+#   docker-compose logs -f    # 로그 확인
+
+version: '3.8'
+
+services:
+  # MySQL 데이터베이스
+  mysql:
+    image: mysql:8.0
+    container_name: vocaking-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: vocaking
+      MYSQL_USER: vocaking
+      MYSQL_PASSWORD: vocaking123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docs/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --default-authentication-plugin=mysql_native_password
+
+volumes:
+  mysql_data:

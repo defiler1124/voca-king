@@ -1,0 +1,46 @@
+# ==============================================================================
+# VOCA KING .gitignore
+# ==============================================================================
+
+# IDE
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# 환경변수
+.env
+.env.local
+.env.*.local
+
+# 빌드 결과물
+/build/
+/dist/
+/out/
+
+# ==================== Backend (Java/Gradle) ====================
+backend/voca-king-api/.gradle/
+backend/voca-king-api/build/
+backend/voca-king-api/bin/
+backend/voca-king-api/out/
+
+# Gradle
+!gradle/wrapper/gradle-wrapper.jar
+.gradle/
+
+# ==================== Frontend (Node.js/React) ====================
+frontend/voca-king-web/node_modules/
+frontend/voca-king-web/dist/
+frontend/voca-king-web/.cache/
+
+# 로그
+*.log
+npm-debug.log*
+
+# 테스트
+coverage/
+.nyc_output/
+
+# 임시 파일
+*.tmp
+*.temp

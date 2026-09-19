@@ -1,0 +1,57 @@
+/* Tailwind CSS v4 */
+@import "tailwindcss";
+
+/* VOCA KING 글로벌 스타일 */
+:root {
+  /* 레벨별 컬러 변수 */
+  --lv1: #D32F3F; --lv1l: #FFE5E5;
+  --lv2: #A84D00; --lv2l: #FFF3E0;
+  --lv3: #8F6600; --lv3l: #FFFDE7;
+  --lv4: #00726A; --lv4l: #E0F7FA;
+  --lv5: #0B8850; --lv5l: #E8F5E9;
+  --lv6: #6552E0; --lv6l: #EDE7F6;
+  --lv7: #C22B76; --lv7l: #FCE4EC;
+  --lv8: #00705F; --lv8l: #E0F5F0;
+  --lv9: #4433C8; --lv9l: #EDE9FD;
+  --lv10: #4A5468; --lv10l: #ECEFF1;
+  --lv11: #B01050; --lv11l: #FCE4EC;
+
+  /* 기본 테마 컬러 */
+  --bg: #F5F6FF;
+  --surface: #FFFFFF;
+  --surface2: #ECEFFB;
+  --text: #232340;
+  --text2: #585C7D;
+  --accent: #D32F3F;
+  --accent-text: #FFFFFF;
+  --deepblue: #1B2A5B;
+  --deepblue-text: #FFFFFF;
+  --deepblue-text2: #AEB8DE;
+  --deepblue-gold: #FFCA57;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* 스크롤바 숨기기 (모바일 친화적) */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
