@@ -22,7 +22,7 @@ interface WordState {
   fetchDays: (levelId: number) => Promise<void>;
   fetchDayDetail: (dayId: number) => Promise<void>;
   fetchAllWordsInLevel: (levelId: number) => Promise<void>;
-  setCurrentLevel: (levelId: number) => void;
+  setCurrentLevel: (levelId: number) => Promise<void>;
   setCurrentDay: (dayId: number) => void;
   setViewMode: (mode: ViewMode) => void;
   clearError: () => void;
@@ -87,9 +87,26 @@ export const useWordStore = create<WordState>((set, get) => ({
   },
 
   // 현재 레벨 설정
-  setCurrentLevel: (levelId: number) => {
-    set({ currentLevelId: levelId, currentDay: null, currentDayId: null });
-    get().fetchDays(levelId);
+  setCurrentLevel: async (levelId: number) => {
+    // 레벨 변경 시 days도 초기화하여 useEffect 타이밍 문제 해결
+    set({ currentLevelId: levelId, currentDay: null, currentDayId: null, days: [] });
+
+    // Days 조회 후 첫 번째 Day 자동 선택
+    try {
+      const days = await getDaysByLevel(levelId);
+      set({ days });
+
+      // 첫 번째 Day가 있으면 자동으로 선택
+      if (days.length > 0) {
+        const currentDay = await getDayDetail(days[0].id);
+        set({ currentDay, currentDayId: days[0].id });
+      }
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Day 목록 조회에 실패했습니다';
+      set({ error: message });
+    }
+
+    // 퀴즈용 전체 단어도 조회
     get().fetchAllWordsInLevel(levelId);
   },
 
