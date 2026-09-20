@@ -14,7 +14,7 @@ interface AuthState {
   error: string | null;
 
   // 액션
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
   register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => void;
   checkAuth: () => Promise<void>;
@@ -43,6 +43,7 @@ export const useAuthStore = create<AuthState>()(
           };
           localStorage.setItem('token', response.token);
           set({ user, token: response.token, isLoading: false });
+          return user;
         } catch (error: unknown) {
           const message = error instanceof Error ? error.message : '로그인에 실패했습니다';
           set({ error: message, isLoading: false });

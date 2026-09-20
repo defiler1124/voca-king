@@ -135,7 +135,7 @@ export default function AdminPage() {
     if (!editingDay || !currentLevelId) return;
     setIsSubmitting(true);
     try {
-      await updateDay(editingDay.id, { levelId: currentLevelId, dayNumber: editingDay.dayNumber, title: editingDay.title });
+      await updateDay(editingDay.id, { levelId: currentLevelId, dayNumber: editingDay.dayNumber, title: editingDay.title || '' });
       setEditingDay(null);
       setShowDayModal(false);
       setCurrentLevel(currentLevelId);
