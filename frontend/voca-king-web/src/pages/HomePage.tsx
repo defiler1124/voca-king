@@ -6,7 +6,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useWordStore } from '../stores/wordStore';
-import { speak } from '../utils/tts';
+import { speak, initTTS } from '../utils/tts';
 import type { Word } from '../types';
 
 type ViewMode = 'cards' | 'flash' | 'final';
@@ -39,6 +39,8 @@ export default function HomePage() {
 
   useEffect(() => {
     fetchLevels();
+    // TTS 음성 목록 미리 로드 (모바일 지원)
+    initTTS();
   }, [fetchLevels]);
 
   useEffect(() => {
@@ -52,6 +54,13 @@ export default function HomePage() {
       setCurrentDay(days[0].id);
     }
   }, [days, currentDay, setCurrentDay]);
+
+  // 파이널테스트 뷰에서 currentDay가 로드되면 퀴즈 빌드
+  useEffect(() => {
+    if (viewMode === 'final' && currentDay && currentDay.words.length > 0 && quizChoices.length === 0) {
+      buildQuizQuestion(0);
+    }
+  }, [viewMode, currentDay, quizChoices.length, buildQuizQuestion]);
 
   const currentLevel = levels.find((l) => l.id === currentLevelId);
 
@@ -82,15 +91,7 @@ export default function HomePage() {
     }
   };
 
-  const startQuiz = useCallback(() => {
-    setQuizIndex(0);
-    setQuizScore(0);
-    setQuizFinished(false);
-    setQuizAnswered(false);
-    buildQuizQuestion(0);
-  }, []);
-
-  const buildQuizQuestion = (idx: number) => {
+  const buildQuizQuestion = useCallback((idx: number) => {
     if (!currentDay || !currentDay.words[idx]) return;
     const correctWord = currentDay.words[idx];
     const correctAnswer = correctWord.korean;
@@ -105,7 +106,19 @@ export default function HomePage() {
     setQuizChoices(choices);
     setQuizAnswered(false);
     setSelectedAnswer(null);
-  };
+  }, [currentDay, allWordsInLevel]);
+
+  const startQuiz = useCallback(() => {
+    setQuizIndex(0);
+    setQuizScore(0);
+    setQuizFinished(false);
+    setQuizAnswered(false);
+    setSelectedAnswer(null);
+    // 약간의 딜레이 후 첫 문제 빌드 (상태 업데이트 대기)
+    setTimeout(() => {
+      buildQuizQuestion(0);
+    }, 50);
+  }, [buildQuizQuestion]);
 
   const selectQuizAnswer = (answer: string) => {
     if (quizAnswered || !currentDay) return;

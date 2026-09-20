@@ -1,84 +1,133 @@
 /**
  * TTS (Text-to-Speech) 유틸리티
  *
- * ResponsiveVoice.js 또는 Web Speech API를 사용한 영어 발음 재생
+ * Web Speech API를 사용한 영어 발음 재생
+ * 모바일 (iOS/Android) 지원
  */
 
-// ResponsiveVoice 타입 정의
-declare global {
-  interface Window {
-    responsiveVoice?: {
-      speak: (text: string, voice: string, options?: object) => void;
-      cancel: () => void;
-      isPlaying: () => boolean;
-    };
-  }
-}
-
-// 선호하는 영어 음성 (UK English 또는 US English)
-const PREFERRED_VOICE = 'UK English Female';
-const FALLBACK_VOICE = 'US English Female';
+// 음성 목록 캐시
+let voicesLoaded = false;
+let cachedVoices: SpeechSynthesisVoice[] = [];
 
 /**
- * 영어 텍스트 발음 재생
- *
- * ResponsiveVoice가 로드되어 있으면 사용하고,
- * 없으면 Web Speech API를 사용합니다.
- *
- * @param text 발음할 영어 텍스트
- * @returns Promise - 발음 완료 시 resolve
+ * 음성 목록 로드 (iOS는 비동기로 로드됨)
  */
-export const speak = (text: string): Promise<void> => {
+const loadVoices = (): Promise<SpeechSynthesisVoice[]> => {
   return new Promise((resolve) => {
-    // ResponsiveVoice 사용 시도
-    if (window.responsiveVoice) {
-      window.responsiveVoice.speak(text, PREFERRED_VOICE, {
-        onend: () => resolve(),
-        onerror: () => {
-          // 실패 시 Web Speech API 폴백
-          speakWithWebSpeech(text).then(resolve);
-        },
-      });
+    if (voicesLoaded && cachedVoices.length > 0) {
+      resolve(cachedVoices);
       return;
     }
 
-    // Web Speech API 사용
-    speakWithWebSpeech(text).then(resolve);
+    const voices = speechSynthesis.getVoices();
+    if (voices.length > 0) {
+      cachedVoices = voices;
+      voicesLoaded = true;
+      resolve(voices);
+      return;
+    }
+
+    // iOS Safari는 voiceschanged 이벤트 후에 음성 목록이 로드됨
+    const handleVoicesChanged = () => {
+      cachedVoices = speechSynthesis.getVoices();
+      voicesLoaded = true;
+      speechSynthesis.removeEventListener('voiceschanged', handleVoicesChanged);
+      resolve(cachedVoices);
+    };
+
+    speechSynthesis.addEventListener('voiceschanged', handleVoicesChanged);
+
+    // 타임아웃: 1초 후에도 로드 안 되면 빈 배열 반환
+    setTimeout(() => {
+      if (!voicesLoaded) {
+        cachedVoices = speechSynthesis.getVoices();
+        voicesLoaded = true;
+        resolve(cachedVoices);
+      }
+    }, 1000);
   });
 };
 
 /**
- * Web Speech API를 사용한 발음
+ * 영어 음성 찾기
  */
-const speakWithWebSpeech = (text: string): Promise<void> => {
+const findEnglishVoice = (voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null => {
+  // 우선순위: 1. 영어 여성 음성, 2. 영어 음성, 3. 기본 음성
+  const englishFemale = voices.find(
+    (v) => v.lang.startsWith('en') && v.name.toLowerCase().includes('female')
+  );
+  if (englishFemale) return englishFemale;
+
+  const englishVoice = voices.find((v) => v.lang.startsWith('en'));
+  if (englishVoice) return englishVoice;
+
+  // iOS/macOS의 기본 영어 음성들
+  const iosEnglish = voices.find((v) =>
+    v.name.includes('Samantha') || v.name.includes('Karen') || v.name.includes('Daniel')
+  );
+  if (iosEnglish) return iosEnglish;
+
+  return voices[0] || null;
+};
+
+/**
+ * 영어 텍스트 발음 재생
+ *
+ * @param text 발음할 영어 텍스트
+ * @returns Promise - 발음 완료 시 resolve
+ */
+export const speak = async (text: string): Promise<void> => {
+  if (!('speechSynthesis' in window)) {
+    console.warn('이 브라우저는 음성 합성을 지원하지 않습니다.');
+    return;
+  }
+
+  // 진행 중인 발음 취소
+  speechSynthesis.cancel();
+
+  // 음성 목록 로드
+  const voices = await loadVoices();
+
   return new Promise((resolve) => {
-    if (!('speechSynthesis' in window)) {
-      console.warn('이 브라우저는 음성 합성을 지원하지 않습니다.');
-      resolve();
-      return;
-    }
-
-    // 진행 중인 발음 취소
-    speechSynthesis.cancel();
-
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'en-US';
-    utterance.rate = 0.9; // 약간 느리게
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 1;
 
-    // 영어 음성 찾기
-    const voices = speechSynthesis.getVoices();
-    const englishVoice = voices.find(
-      (v) => v.lang.startsWith('en') && v.name.includes('Female')
-    ) || voices.find((v) => v.lang.startsWith('en'));
-
-    if (englishVoice) {
-      utterance.voice = englishVoice;
+    const voice = findEnglishVoice(voices);
+    if (voice) {
+      utterance.voice = voice;
     }
 
     utterance.onend = () => resolve();
-    utterance.onerror = () => resolve();
+    utterance.onerror = (e) => {
+      console.warn('TTS 오류:', e);
+      resolve();
+    };
 
-    speechSynthesis.speak(utterance);
+    // iOS Safari 버그 수정: 약간의 딜레이 후 speak 호출
+    setTimeout(() => {
+      speechSynthesis.speak(utterance);
+    }, 10);
+
+    // iOS에서 음성이 멈추는 버그 수정: 주기적으로 resume 호출
+    const resumeInterval = setInterval(() => {
+      if (!speechSynthesis.speaking) {
+        clearInterval(resumeInterval);
+      } else {
+        speechSynthesis.resume();
+      }
+    }, 300);
+
+    // 최대 10초 후 타임아웃
+    setTimeout(() => {
+      clearInterval(resumeInterval);
+      if (speechSynthesis.speaking) {
+        speechSynthesis.cancel();
+      }
+      resolve();
+    }, 10000);
   });
 };
 
@@ -86,33 +135,17 @@ const speakWithWebSpeech = (text: string): Promise<void> => {
  * 발음 중지
  */
 export const stopSpeaking = (): void => {
-  if (window.responsiveVoice?.isPlaying()) {
-    window.responsiveVoice.cancel();
-  }
   if ('speechSynthesis' in window) {
     speechSynthesis.cancel();
   }
 };
 
 /**
- * ResponsiveVoice 스크립트 로드
- * index.html에 추가하거나, 동적으로 로드
+ * TTS 초기화 (페이지 로드 시 호출 권장)
+ * 음성 목록을 미리 로드합니다.
  */
-export const loadResponsiveVoice = (): Promise<void> => {
-  return new Promise((resolve) => {
-    if (window.responsiveVoice) {
-      resolve();
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.src = 'https://code.responsivevoice.org/responsivevoice.js?key=FREE';
-    script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => {
-      console.warn('ResponsiveVoice 로드 실패, Web Speech API 사용');
-      resolve();
-    };
-    document.head.appendChild(script);
-  });
+export const initTTS = async (): Promise<void> => {
+  if ('speechSynthesis' in window) {
+    await loadVoices();
+  }
 };
