@@ -35,6 +35,7 @@ export default function HomePage() {
   const [quizCorrect, setQuizCorrect] = useState(false);
   const [quizScore, setQuizScore] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
 
   useEffect(() => {
     fetchLevels();
@@ -93,18 +94,24 @@ export default function HomePage() {
     if (!currentDay || !currentDay.words[idx]) return;
     const correctWord = currentDay.words[idx];
     const correctAnswer = correctWord.korean;
-    const otherWords = allWordsInLevel.filter(w => w.korean !== correctAnswer);
+
+    // allWordsInLevel이 비어있으면 현재 Day 단어 사용
+    const wordPool = allWordsInLevel.length > 0 ? allWordsInLevel : currentDay.words;
+    const otherWords = wordPool.filter(w => w.korean !== correctAnswer);
     const shuffled = otherWords.sort(() => Math.random() - 0.5).slice(0, 3);
     const distractors = shuffled.map(w => w.korean);
     const choices = [correctAnswer, ...distractors].sort(() => Math.random() - 0.5);
+
     setQuizChoices(choices);
     setQuizAnswered(false);
+    setSelectedAnswer(null);
   };
 
   const selectQuizAnswer = (answer: string) => {
     if (quizAnswered || !currentDay) return;
     const correctAnswer = currentDay.words[quizIndex].korean;
     const isCorrect = answer === correctAnswer;
+    setSelectedAnswer(answer);
     setQuizAnswered(true);
     setQuizCorrect(isCorrect);
     if (isCorrect) setQuizScore(quizScore + 1);
@@ -116,7 +123,7 @@ export default function HomePage() {
       } else {
         setQuizFinished(true);
       }
-    }, 1500);
+    }, 1000);
   };
 
   const handleViewChange = (mode: ViewMode) => {
@@ -576,15 +583,32 @@ export default function HomePage() {
                         알맞은 한글 뜻을 고르세요
                       </div>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       {quizChoices.map((choice, idx) => {
+                        const labels = ['A', 'B', 'C', 'D'];
                         const isCorrectAnswer = choice === currentDay.words[quizIndex].korean;
+                        const isSelectedWrong = quizAnswered && selectedAnswer === choice && !isCorrectAnswer;
+
                         let bg = '#fff';
-                        let border = '1px solid #eee';
+                        let border = '2px solid #eee';
+                        let badgeBg = '#f0f0f0';
+                        let badgeColor = '#666';
+                        let textColor = '#333';
+
                         if (quizAnswered && isCorrectAnswer) {
-                          bg = '#e8f5e9';
-                          border = '2px solid #4caf50';
+                          bg = '#E8F5E9';
+                          border = '2px solid #2E7D32';
+                          badgeBg = '#2E7D32';
+                          badgeColor = '#fff';
+                          textColor = '#1B5E20';
+                        } else if (isSelectedWrong) {
+                          bg = '#FFEBEE';
+                          border = '2px solid #C62828';
+                          badgeBg = '#C62828';
+                          badgeColor = '#fff';
+                          textColor = '#B71C1C';
                         }
+
                         return (
                           <button
                             key={idx}
@@ -594,29 +618,31 @@ export default function HomePage() {
                               display: 'flex',
                               alignItems: 'center',
                               gap: '12px',
-                              padding: '16px',
-                              borderRadius: '16px',
+                              padding: '14px 16px',
+                              borderRadius: '14px',
                               background: bg,
                               border: border,
                               cursor: quizAnswered ? 'default' : 'pointer',
-                              textAlign: 'left'
+                              textAlign: 'left',
+                              transition: 'all 0.15s'
                             }}
                           >
                             <div style={{
                               width: '32px',
                               height: '32px',
                               borderRadius: '50%',
-                              background: '#f0f0f0',
+                              background: badgeBg,
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
                               fontWeight: 700,
                               fontSize: '14px',
-                              color: '#666'
+                              color: badgeColor,
+                              flexShrink: 0
                             }}>
-                              {idx + 1}
+                              {labels[idx]}
                             </div>
-                            <span style={{ fontSize: '15px', color: '#333', fontWeight: 500 }}>{choice}</span>
+                            <span style={{ fontSize: '15px', color: textColor, fontWeight: 500 }}>{choice}</span>
                           </button>
                         );
                       })}

@@ -1,5 +1,5 @@
 /**
- * 로그인 페이지
+ * 로그인 페이지 - 세련된 디자인
  */
 import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -17,7 +17,6 @@ export default function LoginPage() {
 
     try {
       const user = await login(email, password);
-      // 관리자는 관리자 페이지로, 학생은 홈으로
       if (user?.role === 'ADMIN') {
         navigate('/admin');
       } else {
@@ -29,71 +28,182 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--bg)] px-4">
-      <div className="w-full max-w-md">
-        {/* 로고 */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-black text-[var(--deepblue)]">
-            VOCA <span className="text-[var(--deepblue-gold)]">KING</span>
-          </h1>
-          <p className="text-[var(--text2)] mt-2">영어 단어 마스터</p>
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #1B2A5B 0%, #2D3E7D 50%, #1B2A5B 100%)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px'
+    }}>
+      {/* 로고 영역 */}
+      <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+        <div style={{
+          fontSize: '42px',
+          fontWeight: 900,
+          color: '#fff',
+          letterSpacing: '2px',
+          marginBottom: '8px'
+        }}>
+          VOCA <span style={{ color: '#FFCA57' }}>KING</span> 👑
         </div>
+        <p style={{ color: '#AEB8DE', fontSize: '14px' }}>
+          영어 단어 마스터의 시작
+        </p>
+      </div>
 
-        {/* 로그인 폼 */}
-        <div className="bg-white rounded-2xl shadow-lg p-8">
-          <h2 className="text-xl font-bold text-center mb-6">로그인</h2>
+      {/* 로그인 카드 */}
+      <div style={{
+        width: '100%',
+        maxWidth: '400px',
+        background: '#fff',
+        borderRadius: '24px',
+        padding: '40px 32px',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+      }}>
+        <h2 style={{
+          textAlign: 'center',
+          fontSize: '24px',
+          fontWeight: 800,
+          color: '#1B2A5B',
+          marginBottom: '32px'
+        }}>
+          로그인
+        </h2>
 
-          {error && (
-            <div className="bg-red-100 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">
-              {error}
-            </div>
-          )}
+        {error && (
+          <div style={{
+            background: '#FFEBEE',
+            color: '#C62828',
+            padding: '12px 16px',
+            borderRadius: '12px',
+            marginBottom: '24px',
+            fontSize: '14px',
+            textAlign: 'center',
+            fontWeight: 500
+          }}>
+            {error}
+          </div>
+        )}
 
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-[var(--text2)] mb-1">
-                이메일
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[var(--accent)]"
-                placeholder="이메일을 입력하세요"
-                required
-              />
-            </div>
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{
+              display: 'block',
+              fontSize: '13px',
+              fontWeight: 600,
+              color: '#666',
+              marginBottom: '8px'
+            }}>
+              이메일
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '14px 16px',
+                border: '2px solid #e0e0e0',
+                borderRadius: '12px',
+                fontSize: '15px',
+                outline: 'none',
+                transition: 'border-color 0.2s',
+                boxSizing: 'border-box'
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#1B2A5B'}
+              onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
+              placeholder="이메일을 입력하세요"
+              required
+            />
+          </div>
 
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-[var(--text2)] mb-1">
-                비밀번호
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[var(--accent)]"
-                placeholder="비밀번호를 입력하세요"
-                required
-              />
-            </div>
+          <div style={{ marginBottom: '28px' }}>
+            <label style={{
+              display: 'block',
+              fontSize: '13px',
+              fontWeight: 600,
+              color: '#666',
+              marginBottom: '8px'
+            }}>
+              비밀번호
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '14px 16px',
+                border: '2px solid #e0e0e0',
+                borderRadius: '12px',
+                fontSize: '15px',
+                outline: 'none',
+                transition: 'border-color 0.2s',
+                boxSizing: 'border-box'
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#1B2A5B'}
+              onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
+              placeholder="비밀번호를 입력하세요"
+              required
+            />
+          </div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-3 bg-[var(--accent)] text-white font-bold rounded-xl hover:opacity-90 disabled:opacity-50 transition-opacity"
-            >
-              {isLoading ? '로그인 중...' : '로그인'}
-            </button>
-          </form>
+          <button
+            type="submit"
+            disabled={isLoading}
+            style={{
+              width: '100%',
+              padding: '16px',
+              background: isLoading ? '#999' : 'linear-gradient(135deg, #D32F3F 0%, #C22B76 100%)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '12px',
+              fontSize: '16px',
+              fontWeight: 700,
+              cursor: isLoading ? 'default' : 'pointer',
+              transition: 'transform 0.2s, box-shadow 0.2s',
+              boxShadow: '0 4px 15px rgba(211, 47, 63, 0.4)'
+            }}
+            onMouseOver={(e) => !isLoading && (e.currentTarget.style.transform = 'translateY(-2px)')}
+            onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+          >
+            {isLoading ? '로그인 중...' : '로그인'}
+          </button>
+        </form>
 
-          <p className="text-center text-sm text-[var(--text2)] mt-6">
+        <div style={{
+          textAlign: 'center',
+          marginTop: '28px',
+          paddingTop: '24px',
+          borderTop: '1px solid #eee'
+        }}>
+          <span style={{ color: '#888', fontSize: '14px' }}>
             계정이 없으신가요?{' '}
-            <Link to="/register" className="text-[var(--accent)] font-medium">
-              회원가입
-            </Link>
-          </p>
+          </span>
+          <Link
+            to="/register"
+            style={{
+              color: '#D32F3F',
+              fontWeight: 600,
+              textDecoration: 'none',
+              fontSize: '14px'
+            }}
+          >
+            회원가입
+          </Link>
         </div>
+      </div>
+
+      {/* 푸터 */}
+      <div style={{
+        marginTop: '32px',
+        textAlign: 'center',
+        color: '#AEB8DE',
+        fontSize: '12px'
+      }}>
+        © 2026 플로우어학원. All Rights Reserved.
       </div>
     </div>
   );
