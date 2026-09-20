@@ -84,7 +84,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: false
 
 # JWT 설정 (환경변수로 주입)
