@@ -11,19 +11,17 @@ import com.vocaking.repository.WordRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 개발 환경용 초기 데이터 생성
+ * 초기 데이터 생성
  *
- * dev 프로파일에서만 실행됨
+ * dev/prod 프로파일 모두에서 실행 (빈 DB일 경우만)
  */
 @Slf4j
 @Component
-@Profile("dev")
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 

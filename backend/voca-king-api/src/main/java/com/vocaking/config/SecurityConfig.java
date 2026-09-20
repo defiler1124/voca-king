@@ -98,7 +98,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(
+        configuration.setAllowedOriginPatterns(List.of(
             "http://localhost:3000",       // 로컬 개발
             "http://localhost:5173",       // Vite 개발 서버
             "https://*.vercel.app",        // Vercel 배포
