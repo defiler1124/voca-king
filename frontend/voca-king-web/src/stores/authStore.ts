@@ -14,8 +14,8 @@ interface AuthState {
   error: string | null;
 
   // 액션
-  login: (email: string, password: string) => Promise<User>;
-  register: (email: string, password: string, name: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<User>;
+  register: (username: string, password: string, name: string) => Promise<void>;
   logout: () => void;
   checkAuth: () => Promise<void>;
   clearError: () => void;
@@ -31,13 +31,13 @@ export const useAuthStore = create<AuthState>()(
       error: null,
 
       // 로그인
-      login: async (email: string, password: string) => {
+      login: async (username: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await apiLogin(email, password);
+          const response = await apiLogin(username, password);
           const user: User = {
             id: 0, // API 응답에 ID가 없으면 0으로 설정
-            email: response.email,
+            username: response.username,
             name: response.name,
             role: response.role,
           };
@@ -45,20 +45,24 @@ export const useAuthStore = create<AuthState>()(
           set({ user, token: response.token, isLoading: false });
           return user;
         } catch (error: unknown) {
-          const message = error instanceof Error ? error.message : '로그인에 실패했습니다';
+          // Axios 에러에서 서버 메시지 추출
+          const err = error as { response?: { data?: { error?: string } } };
+          const message = err.response?.data?.error || '로그인에 실패했습니다';
           set({ error: message, isLoading: false });
           throw error;
         }
       },
 
       // 회원가입
-      register: async (email: string, password: string, name: string) => {
+      register: async (username: string, password: string, name: string) => {
         set({ isLoading: true, error: null });
         try {
-          await apiRegister(email, password, name);
+          await apiRegister(username, password, name);
           set({ isLoading: false });
         } catch (error: unknown) {
-          const message = error instanceof Error ? error.message : '회원가입에 실패했습니다';
+          // Axios 에러에서 서버 메시지 추출
+          const err = error as { response?: { data?: { error?: string } } };
+          const message = err.response?.data?.error || '회원가입에 실패했습니다';
           set({ error: message, isLoading: false });
           throw error;
         }

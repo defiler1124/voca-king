@@ -6,7 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 
 export default function RegisterPage() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
@@ -19,6 +19,11 @@ export default function RegisterPage() {
     clearError();
     setLocalError('');
 
+    if (username.length < 4) {
+      setLocalError('아이디는 4자 이상이어야 합니다');
+      return;
+    }
+
     if (password !== confirmPassword) {
       setLocalError('비밀번호가 일치하지 않습니다');
       return;
@@ -30,7 +35,7 @@ export default function RegisterPage() {
     }
 
     try {
-      await register(email, password, name);
+      await register(username, password, name);
       alert('회원가입이 완료되었습니다. 로그인해주세요.');
       navigate('/login');
     } catch {
@@ -142,16 +147,16 @@ export default function RegisterPage() {
               color: '#666',
               marginBottom: '8px'
             }}>
-              이메일
+              아이디
             </label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               style={inputStyle}
               onFocus={(e) => e.target.style.borderColor = '#1B2A5B'}
               onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
-              placeholder="이메일을 입력하세요"
+              placeholder="아이디를 입력하세요 (4자 이상)"
               required
             />
           </div>

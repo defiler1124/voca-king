@@ -6,7 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const { login, isLoading, error, clearError } = useAuthStore();
   const navigate = useNavigate();
@@ -16,15 +16,27 @@ export default function LoginPage() {
     clearError();
 
     try {
-      const user = await login(email, password);
+      const user = await login(username, password);
       if (user?.role === 'ADMIN') {
         navigate('/admin');
       } else {
         navigate('/');
       }
     } catch {
-      // 에러는 스토어에서 처리
+      // 에러는 스토어에서 처리 - 여기서 아무것도 안함
+      // 에러가 있으면 페이지에 머물러야 함
     }
+  };
+
+  // 입력 시 에러 메시지 지우기
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (error) clearError();
+    setUsername(e.target.value);
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (error) clearError();
+    setPassword(e.target.value);
   };
 
   return (
@@ -96,12 +108,12 @@ export default function LoginPage() {
               color: '#666',
               marginBottom: '8px'
             }}>
-              이메일
+              아이디
             </label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              value={username}
+              onChange={handleUsernameChange}
               style={{
                 width: '100%',
                 padding: '14px 16px',
@@ -114,7 +126,7 @@ export default function LoginPage() {
               }}
               onFocus={(e) => e.target.style.borderColor = '#1B2A5B'}
               onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
-              placeholder="이메일을 입력하세요"
+              placeholder="아이디를 입력하세요"
               required
             />
           </div>
@@ -132,7 +144,7 @@ export default function LoginPage() {
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={handlePasswordChange}
               style={{
                 width: '100%',
                 padding: '14px 16px',

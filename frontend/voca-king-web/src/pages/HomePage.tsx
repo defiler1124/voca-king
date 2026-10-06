@@ -2,12 +2,14 @@
  * 홈 페이지 (메인 학습 페이지)
  * test.html 원본 디자인 정확히 구현
  */
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useWordStore } from '../stores/wordStore';
 import { speak, initTTS } from '../utils/tts';
+import { recordAttempt, saveQuizResult } from '../services/api';
 import type { Word } from '../types';
+import type { AttemptRequest } from '../services/api';
 
 type ViewMode = 'cards' | 'flash' | 'final';
 
@@ -36,10 +38,25 @@ export default function HomePage() {
   const [quizScore, setQuizScore] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [quizAttempts, setQuizAttempts] = useState<AttemptRequest[]>([]);
+
+  // 스크롤 컨테이너 refs
+  const levelScrollRef = useRef<HTMLDivElement>(null);
+  const dayScrollRef = useRef<HTMLDivElement>(null);
+
+  // 스크롤 함수
+  const scrollContainer = (ref: React.RefObject<HTMLDivElement | null>, direction: 'left' | 'right') => {
+    if (ref.current) {
+      const scrollAmount = 200;
+      ref.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   useEffect(() => {
     fetchLevels();
-    // TTS 음성 목록 미리 로드 (모바일 지원)
     initTTS();
   }, [fetchLevels]);
 
@@ -55,12 +72,11 @@ export default function HomePage() {
     }
   }, [days, currentDay, setCurrentDay]);
 
-  // 파이널테스트 뷰에서 currentDay가 로드되면 퀴즈 빌드
+  // Day 변경 시 셀프테스트 인덱스 초기화
   useEffect(() => {
-    if (viewMode === 'final' && currentDay && currentDay.words.length > 0 && quizChoices.length === 0) {
-      buildQuizQuestion(0);
-    }
-  }, [viewMode, currentDay, quizChoices.length, buildQuizQuestion]);
+    setFlashIndex(0);
+    setShowKorean(false);
+  }, [currentDay?.id]);
 
   const currentLevel = levels.find((l) => l.id === currentLevelId);
 
@@ -68,11 +84,19 @@ export default function HomePage() {
     setPlayingWordId(word.id);
     await speak(word.english);
     setPlayingWordId(null);
+    // 학습 기록 저장
+    recordAttempt({ wordId: word.id, attemptType: 'LISTEN', correct: true }).catch(() => {});
   };
 
   const toggleFlashKr = () => {
     if (!showKorean && currentDay) {
       speak(currentDay.words[flashIndex].english);
+      // 셀프테스트 학습 기록
+      recordAttempt({
+        wordId: currentDay.words[flashIndex].id,
+        attemptType: 'FLASH',
+        correct: true
+      }).catch(() => {});
     }
     setShowKorean(!showKorean);
   };
@@ -114,20 +138,42 @@ export default function HomePage() {
     setQuizFinished(false);
     setQuizAnswered(false);
     setSelectedAnswer(null);
+    setQuizAttempts([]);
     // 약간의 딜레이 후 첫 문제 빌드 (상태 업데이트 대기)
     setTimeout(() => {
       buildQuizQuestion(0);
     }, 50);
   }, [buildQuizQuestion]);
 
+  // 파이널테스트 뷰에서 currentDay가 로드되면 퀴즈 빌드
+  useEffect(() => {
+    if (viewMode === 'final' && currentDay && currentDay.words.length > 0 && quizChoices.length === 0) {
+      buildQuizQuestion(0);
+    }
+  }, [viewMode, currentDay, quizChoices.length, buildQuizQuestion]);
+
   const selectQuizAnswer = (answer: string) => {
     if (quizAnswered || !currentDay) return;
-    const correctAnswer = currentDay.words[quizIndex].korean;
+    const currentWord = currentDay.words[quizIndex];
+    const correctAnswer = currentWord.korean;
     const isCorrect = answer === correctAnswer;
     setSelectedAnswer(answer);
     setQuizAnswered(true);
     setQuizCorrect(isCorrect);
-    if (isCorrect) setQuizScore(quizScore + 1);
+
+    const newScore = isCorrect ? quizScore + 1 : quizScore;
+    if (isCorrect) setQuizScore(newScore);
+
+    // 퀴즈 시도 기록 추가
+    const attempt: AttemptRequest = {
+      wordId: currentWord.id,
+      attemptType: 'QUIZ',
+      correct: isCorrect,
+      selectedAnswer: isCorrect ? undefined : answer
+    };
+    const newAttempts = [...quizAttempts, attempt];
+    setQuizAttempts(newAttempts);
+
     setTimeout(() => {
       if (quizIndex < currentDay.words.length - 1) {
         const nextIdx = quizIndex + 1;
@@ -135,6 +181,13 @@ export default function HomePage() {
         buildQuizQuestion(nextIdx);
       } else {
         setQuizFinished(true);
+        // 퀴즈 결과 저장
+        saveQuizResult({
+          dayId: currentDay.id,
+          correctCount: newScore,
+          totalCount: currentDay.words.length,
+          attempts: newAttempts
+        }).catch(() => {});
       }
     }, 1000);
   };
@@ -219,37 +272,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* 레벨 선택 - 원본과 동일 (pill 버튼, 테두리만) */}
-      <div style={{
-        overflowX: 'auto',
-        background: '#fff',
-        padding: '12px 16px',
-        borderBottom: '1px solid #eee'
-      }} className="hide-scrollbar">
-        <div style={{ display: 'flex', gap: '8px', whiteSpace: 'nowrap' }}>
-          {levels.map((level) => (
-            <button
-              key={level.id}
-              onClick={() => setCurrentLevel(level.id)}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '20px',
-                fontSize: '13px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                border: currentLevelId === level.id ? '2px solid #D32F3F' : '2px solid #ddd',
-                background: '#fff',
-                color: currentLevelId === level.id ? '#D32F3F' : '#666',
-                transition: 'all 0.2s'
-              }}
-            >
-              {level.name}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Day 선택 - 원본과 동일 (화살표 + pill 버튼) */}
+      {/* 레벨 선택 - 화살표 + 슬라이드 */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -258,22 +281,94 @@ export default function HomePage() {
         borderBottom: '1px solid #eee'
       }}>
         <button
-          onClick={() => currentDayIndex > 0 && setCurrentDay(days[currentDayIndex - 1].id)}
-          disabled={currentDayIndex <= 0}
+          onClick={() => scrollContainer(levelScrollRef, 'left')}
           style={{
-            width: '24px',
-            height: '24px',
+            width: '28px',
+            height: '28px',
             border: 'none',
             background: 'transparent',
-            color: currentDayIndex <= 0 ? '#ccc' : '#999',
-            fontSize: '16px',
-            cursor: currentDayIndex <= 0 ? 'default' : 'pointer'
+            color: '#999',
+            fontSize: '18px',
+            cursor: 'pointer',
+            flexShrink: 0
           }}
         >
           ‹
         </button>
-        <div style={{ flex: 1, overflowX: 'auto' }} className="hide-scrollbar">
-          <div style={{ display: 'flex', gap: '8px', padding: '0 8px', whiteSpace: 'nowrap' }}>
+        <div
+          ref={levelScrollRef}
+          style={{ flex: 1, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          className="hide-scrollbar"
+        >
+          <div style={{ display: 'flex', gap: '8px', padding: '4px 8px', whiteSpace: 'nowrap' }}>
+            {levels.map((level) => (
+              <button
+                key={level.id}
+                onClick={() => setCurrentLevel(level.id)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '20px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  border: currentLevelId === level.id ? '2px solid #D32F3F' : '2px solid #ddd',
+                  background: '#fff',
+                  color: currentLevelId === level.id ? '#D32F3F' : '#666',
+                  transition: 'all 0.2s',
+                  flexShrink: 0
+                }}
+              >
+                {level.name}
+              </button>
+            ))}
+          </div>
+        </div>
+        <button
+          onClick={() => scrollContainer(levelScrollRef, 'right')}
+          style={{
+            width: '28px',
+            height: '28px',
+            border: 'none',
+            background: 'transparent',
+            color: '#999',
+            fontSize: '18px',
+            cursor: 'pointer',
+            flexShrink: 0
+          }}
+        >
+          ›
+        </button>
+      </div>
+
+      {/* Day 선택 - 화살표 + 슬라이드 */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        background: '#fff',
+        padding: '8px 8px',
+        borderBottom: '1px solid #eee'
+      }}>
+        <button
+          onClick={() => scrollContainer(dayScrollRef, 'left')}
+          style={{
+            width: '28px',
+            height: '28px',
+            border: 'none',
+            background: 'transparent',
+            color: '#999',
+            fontSize: '18px',
+            cursor: 'pointer',
+            flexShrink: 0
+          }}
+        >
+          ‹
+        </button>
+        <div
+          ref={dayScrollRef}
+          style={{ flex: 1, overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          className="hide-scrollbar"
+        >
+          <div style={{ display: 'flex', gap: '8px', padding: '4px 8px', whiteSpace: 'nowrap' }}>
             {days.map((day) => (
               <button
                 key={day.id}
@@ -287,7 +382,8 @@ export default function HomePage() {
                   border: 'none',
                   background: currentDay?.id === day.id ? '#3B5998' : '#f0f0f0',
                   color: currentDay?.id === day.id ? '#fff' : '#666',
-                  transition: 'all 0.2s'
+                  transition: 'all 0.2s',
+                  flexShrink: 0
                 }}
               >
                 Day {day.dayNumber}
@@ -296,16 +392,16 @@ export default function HomePage() {
           </div>
         </div>
         <button
-          onClick={() => currentDayIndex < days.length - 1 && setCurrentDay(days[currentDayIndex + 1].id)}
-          disabled={currentDayIndex >= days.length - 1}
+          onClick={() => scrollContainer(dayScrollRef, 'right')}
           style={{
-            width: '24px',
-            height: '24px',
+            width: '28px',
+            height: '28px',
             border: 'none',
             background: 'transparent',
-            color: currentDayIndex >= days.length - 1 ? '#ccc' : '#999',
-            fontSize: '16px',
-            cursor: currentDayIndex >= days.length - 1 ? 'default' : 'pointer'
+            color: '#999',
+            fontSize: '18px',
+            cursor: 'pointer',
+            flexShrink: 0
           }}
         >
           ›

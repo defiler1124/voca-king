@@ -6,7 +6,7 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './stores/authStore';
-import { loadResponsiveVoice } from './utils/tts';
+import { initTTS } from './utils/tts';
 
 // 페이지 컴포넌트
 import LoginPage from './pages/LoginPage';
@@ -56,9 +56,9 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 }
 
 function App() {
-  // ResponsiveVoice TTS 로드
+  // TTS 초기화 (모바일 지원)
   useEffect(() => {
-    loadResponsiveVoice();
+    initTTS();
   }, []);
 
   return (

@@ -60,6 +60,13 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
+# Azure TTS (개발: 비활성화)
+azure:
+  speech:
+    enabled: false
+    key: ""
+    region: "eastus"
+
 # 로깅 설정
 logging:
   level:
@@ -91,6 +98,13 @@ spring:
 jwt:
   secret: ${JWT_SECRET}
   expiration: 86400000
+
+# Azure TTS (환경변수로 활성화)
+azure:
+  speech:
+    enabled: ${AZURE_TTS_ENABLED:false}
+    key: ${AZURE_SPEECH_KEY:}
+    region: ${AZURE_SPEECH_REGION:eastus}
 
 # 로깅 설정
 logging:

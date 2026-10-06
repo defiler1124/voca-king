@@ -63,30 +63,30 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void createAdminUser() {
-        if (userRepository.findByEmail("admin@vocaking.com").isEmpty()) {
+        if (userRepository.findByUsername("admin").isEmpty()) {
             User admin = User.builder()
-                    .email("admin@vocaking.com")
+                    .username("admin")
                     .password(passwordEncoder.encode("admin123"))
                     .name("관리자")
                     .role(User.Role.ADMIN)
                     .active(true)
                     .build();
             userRepository.save(admin);
-            log.info("관리자 계정 생성: admin@vocaking.com / admin123");
+            log.info("관리자 계정 생성: admin / admin123");
         }
     }
 
     private void createStudentUser() {
-        if (userRepository.findByEmail("student@vocaking.com").isEmpty()) {
+        if (userRepository.findByUsername("student").isEmpty()) {
             User student = User.builder()
-                    .email("student@vocaking.com")
+                    .username("student")
                     .password(passwordEncoder.encode("student123"))
                     .name("테스트학생")
                     .role(User.Role.STUDENT)
                     .active(true)
                     .build();
             userRepository.save(student);
-            log.info("학생 계정 생성: student@vocaking.com / student123");
+            log.info("학생 계정 생성: student / student123");
         }
     }
 

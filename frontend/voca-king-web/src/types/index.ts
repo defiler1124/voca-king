@@ -8,7 +8,7 @@ export type UserRole = 'ADMIN' | 'STUDENT';
 // 사용자 정보
 export interface User {
   id: number;
-  email: string;
+  username: string;
   name: string;
   role: UserRole;
 }
@@ -16,7 +16,7 @@ export interface User {
 // 로그인 응답
 export interface LoginResponse {
   token: string;
-  email: string;
+  username: string;
   name: string;
   role: UserRole;
 }

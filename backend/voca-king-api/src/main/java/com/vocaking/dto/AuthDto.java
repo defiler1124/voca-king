@@ -1,8 +1,8 @@
 package com.vocaking.dto;
 
 import com.vocaking.entity.User;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
@@ -20,9 +20,10 @@ public class AuthDto {
     @AllArgsConstructor
     public static class RegisterRequest {
 
-        @NotBlank(message = "이메일은 필수입니다")
-        @Email(message = "올바른 이메일 형식이 아닙니다")
-        private String email;
+        @NotBlank(message = "아이디는 필수입니다")
+        @Size(min = 4, max = 20, message = "아이디는 4~20자여야 합니다")
+        @Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "아이디는 영문, 숫자, 밑줄(_)만 사용 가능합니다")
+        private String username;
 
         @NotBlank(message = "비밀번호는 필수입니다")
         @Size(min = 6, max = 20, message = "비밀번호는 6~20자여야 합니다")
@@ -42,9 +43,8 @@ public class AuthDto {
     @AllArgsConstructor
     public static class LoginRequest {
 
-        @NotBlank(message = "이메일은 필수입니다")
-        @Email(message = "올바른 이메일 형식이 아닙니다")
-        private String email;
+        @NotBlank(message = "아이디는 필수입니다")
+        private String username;
 
         @NotBlank(message = "비밀번호는 필수입니다")
         private String password;
@@ -60,14 +60,14 @@ public class AuthDto {
     @Builder
     public static class LoginResponse {
         private String token;
-        private String email;
+        private String username;
         private String name;
         private String role;
 
         public static LoginResponse from(User user, String token) {
             return LoginResponse.builder()
                     .token(token)
-                    .email(user.getEmail())
+                    .username(user.getUsername())
                     .name(user.getName())
                     .role(user.getRole().name())
                     .build();
@@ -84,14 +84,14 @@ public class AuthDto {
     @Builder
     public static class UserResponse {
         private Long id;
-        private String email;
+        private String username;
         private String name;
         private String role;
 
         public static UserResponse from(User user) {
             return UserResponse.builder()
                     .id(user.getId())
-                    .email(user.getEmail())
+                    .username(user.getUsername())
                     .name(user.getName())
                     .role(user.getRole().name())
                     .build();

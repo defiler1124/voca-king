@@ -1,151 +1,265 @@
 /**
  * TTS (Text-to-Speech) 유틸리티
  *
- * Web Speech API를 사용한 영어 발음 재생
- * 모바일 (iOS/Android) 지원
+ * Azure TTS (백엔드) > Web Speech API (폴백)
  */
 
-// 음성 목록 캐시
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
+let audioElement: HTMLAudioElement | null = null;
+let useBackendTts = true;  // 백엔드 TTS 사용 여부
 let voicesLoaded = false;
-let cachedVoices: SpeechSynthesisVoice[] = [];
+
+// iOS 감지
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
 /**
- * 음성 목록 로드 (iOS는 비동기로 로드됨)
+ * 백엔드 TTS로 발음 재생 (Azure TTS)
  */
-const loadVoices = (): Promise<SpeechSynthesisVoice[]> => {
+const playWithBackendTts = (text: string): Promise<void> => {
   return new Promise((resolve) => {
-    if (voicesLoaded && cachedVoices.length > 0) {
-      resolve(cachedVoices);
+    const token = localStorage.getItem('token');
+    if (!token) {
+      resolve();
       return;
     }
 
-    const voices = speechSynthesis.getVoices();
-    if (voices.length > 0) {
-      cachedVoices = voices;
-      voicesLoaded = true;
-      resolve(voices);
-      return;
+    // 이전 오디오 정리
+    if (audioElement) {
+      audioElement.pause();
+      audioElement.src = '';
     }
 
-    // iOS Safari는 voiceschanged 이벤트 후에 음성 목록이 로드됨
-    const handleVoicesChanged = () => {
-      cachedVoices = speechSynthesis.getVoices();
-      voicesLoaded = true;
-      speechSynthesis.removeEventListener('voiceschanged', handleVoicesChanged);
-      resolve(cachedVoices);
-    };
+    audioElement = new Audio();
 
-    speechSynthesis.addEventListener('voiceschanged', handleVoicesChanged);
-
-    // 타임아웃: 1초 후에도 로드 안 되면 빈 배열 반환
-    setTimeout(() => {
-      if (!voicesLoaded) {
-        cachedVoices = speechSynthesis.getVoices();
-        voicesLoaded = true;
-        resolve(cachedVoices);
+    fetch(`${API_BASE_URL}/api/tts/speak?text=${encodeURIComponent(text)}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
       }
-    }, 1000);
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('TTS API 실패');
+        }
+        return response.blob();
+      })
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        audioElement!.src = url;
+        audioElement!.onended = () => {
+          URL.revokeObjectURL(url);
+          resolve();
+        };
+        audioElement!.onerror = () => {
+          URL.revokeObjectURL(url);
+          resolve();
+        };
+        audioElement!.play().catch(() => resolve());
+      })
+      .catch(() => {
+        useBackendTts = false;
+        playWithWebSpeech(text).then(resolve);
+      });
+
+    setTimeout(resolve, 10000);
   });
 };
 
 /**
- * 영어 음성 찾기
+ * 고품질 영어 음성 선택
  */
-const findEnglishVoice = (voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null => {
-  // 우선순위: 1. 영어 여성 음성, 2. 영어 음성, 3. 기본 음성
-  const englishFemale = voices.find(
-    (v) => v.lang.startsWith('en') && v.name.toLowerCase().includes('female')
+const selectBestVoice = (): SpeechSynthesisVoice | null => {
+  const voices = window.speechSynthesis.getVoices();
+
+  // 우선순위: Google > Microsoft Online > Apple > Microsoft > 기타
+  const preferredVoices = [
+    // Google (Chrome)
+    'Google US English',
+    'Google UK English Female',
+    'Google UK English Male',
+    // Microsoft Edge Online (고품질)
+    'Microsoft Aria Online',
+    'Microsoft Jenny Online',
+    'Microsoft Guy Online',
+    // Apple (Safari/iOS) - iOS에서 잘 작동하는 음성
+    'Samantha',
+    'Karen',
+    'Daniel',
+    'Moira',
+    'Tessa',
+    // Microsoft 로컬
+    'Microsoft Zira',
+    'Microsoft David',
+  ];
+
+  for (const name of preferredVoices) {
+    const voice = voices.find(v => v.name.includes(name));
+    if (voice) return voice;
+  }
+
+  // Online 음성 우선
+  const onlineVoice = voices.find(v =>
+    v.lang.startsWith('en') && v.name.includes('Online')
   );
-  if (englishFemale) return englishFemale;
+  if (onlineVoice) return onlineVoice;
 
-  const englishVoice = voices.find((v) => v.lang.startsWith('en'));
-  if (englishVoice) return englishVoice;
-
-  // iOS/macOS의 기본 영어 음성들
-  const iosEnglish = voices.find((v) =>
-    v.name.includes('Samantha') || v.name.includes('Karen') || v.name.includes('Daniel')
+  // en-US 네트워크 음성
+  const networkVoice = voices.find(v =>
+    v.lang === 'en-US' && !v.localService
   );
-  if (iosEnglish) return iosEnglish;
+  if (networkVoice) return networkVoice;
 
-  return voices[0] || null;
+  // en-US 음성
+  const usVoice = voices.find(v => v.lang === 'en-US');
+  if (usVoice) return usVoice;
+
+  // 아무 영어 음성
+  return voices.find(v => v.lang.startsWith('en')) || null;
+};
+
+/**
+ * iOS Safari 버그 워크어라운드
+ * speechSynthesis가 멈추는 버그 해결
+ */
+const iosSpeechWorkaround = () => {
+  if (isIOS) {
+    // iOS에서 speechSynthesis가 멈추는 버그 해결
+    const resumeInterval = setInterval(() => {
+      if (!window.speechSynthesis.speaking) {
+        clearInterval(resumeInterval);
+      } else {
+        window.speechSynthesis.pause();
+        window.speechSynthesis.resume();
+      }
+    }, 5000);
+
+    // 최대 30초 후 정리
+    setTimeout(() => clearInterval(resumeInterval), 30000);
+  }
+};
+
+/**
+ * Web Speech API로 발음 재생 (폴백)
+ */
+const playWithWebSpeech = (text: string): Promise<void> => {
+  return new Promise((resolve) => {
+    if (!('speechSynthesis' in window)) {
+      console.warn('Web Speech API not supported');
+      resolve();
+      return;
+    }
+
+    // iOS: 음성이 로드되지 않았으면 다시 로드 시도
+    if (!voicesLoaded) {
+      window.speechSynthesis.getVoices();
+    }
+
+    // 이전 발화 취소
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-US';
+    utterance.rate = isIOS ? 0.9 : 0.85;  // iOS는 약간 빠르게
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    const bestVoice = selectBestVoice();
+    if (bestVoice) {
+      utterance.voice = bestVoice;
+      console.log('TTS Voice:', bestVoice.name);
+    } else {
+      console.log('TTS: Using default voice');
+    }
+
+    let resolved = false;
+    const done = () => {
+      if (!resolved) {
+        resolved = true;
+        resolve();
+      }
+    };
+
+    utterance.onend = done;
+    utterance.onerror = (e) => {
+      console.warn('TTS Error:', e);
+      done();
+    };
+
+    // iOS 워크어라운드 시작
+    if (isIOS) {
+      iosSpeechWorkaround();
+    }
+
+    window.speechSynthesis.speak(utterance);
+
+    // 타임아웃 (iOS에서 이벤트가 발생하지 않을 수 있음)
+    setTimeout(done, 5000);
+  });
 };
 
 /**
  * 영어 텍스트 발음 재생
- *
- * @param text 발음할 영어 텍스트
- * @returns Promise - 발음 완료 시 resolve
  */
 export const speak = async (text: string): Promise<void> => {
-  if (!('speechSynthesis' in window)) {
-    console.warn('이 브라우저는 음성 합성을 지원하지 않습니다.');
-    return;
+  if (useBackendTts) {
+    return playWithBackendTts(text);
   }
-
-  // 진행 중인 발음 취소
-  speechSynthesis.cancel();
-
-  // 음성 목록 로드
-  const voices = await loadVoices();
-
-  return new Promise((resolve) => {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    utterance.rate = 0.9;
-    utterance.pitch = 1;
-    utterance.volume = 1;
-
-    const voice = findEnglishVoice(voices);
-    if (voice) {
-      utterance.voice = voice;
-    }
-
-    utterance.onend = () => resolve();
-    utterance.onerror = (e) => {
-      console.warn('TTS 오류:', e);
-      resolve();
-    };
-
-    // iOS Safari 버그 수정: 약간의 딜레이 후 speak 호출
-    setTimeout(() => {
-      speechSynthesis.speak(utterance);
-    }, 10);
-
-    // iOS에서 음성이 멈추는 버그 수정: 주기적으로 resume 호출
-    const resumeInterval = setInterval(() => {
-      if (!speechSynthesis.speaking) {
-        clearInterval(resumeInterval);
-      } else {
-        speechSynthesis.resume();
-      }
-    }, 300);
-
-    // 최대 10초 후 타임아웃
-    setTimeout(() => {
-      clearInterval(resumeInterval);
-      if (speechSynthesis.speaking) {
-        speechSynthesis.cancel();
-      }
-      resolve();
-    }, 10000);
-  });
+  return playWithWebSpeech(text);
 };
 
 /**
  * 발음 중지
  */
 export const stopSpeaking = (): void => {
+  if (audioElement) {
+    audioElement.pause();
+    audioElement.src = '';
+  }
   if ('speechSynthesis' in window) {
-    speechSynthesis.cancel();
+    window.speechSynthesis.cancel();
   }
 };
 
 /**
- * TTS 초기화 (페이지 로드 시 호출 권장)
- * 음성 목록을 미리 로드합니다.
+ * TTS 초기화
  */
 export const initTTS = async (): Promise<void> => {
+  // Web Speech API 음성 목록 로드
   if ('speechSynthesis' in window) {
-    await loadVoices();
+    // 음성 목록 로드 (iOS에서는 여러 번 호출 필요할 수 있음)
+    const loadVoices = () => {
+      const voices = window.speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        voicesLoaded = true;
+        console.log(`TTS: ${voices.length} voices loaded`);
+      }
+    };
+
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+
+    // iOS: 추가 로드 시도
+    if (isIOS) {
+      setTimeout(loadVoices, 100);
+      setTimeout(loadVoices, 500);
+      setTimeout(loadVoices, 1000);
+    }
+  }
+
+  // 백엔드 TTS 상태 확인
+  const token = localStorage.getItem('token');
+  if (token) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/tts/status`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        useBackendTts = data.enabled;
+        console.log(`TTS Provider: ${useBackendTts ? 'Azure TTS' : 'Web Speech API'}`);
+      }
+    } catch {
+      useBackendTts = false;
+    }
   }
 };

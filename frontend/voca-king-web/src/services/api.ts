@@ -29,11 +29,15 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// 응답 인터셉터: 401 에러 시 로그아웃 처리
+// 응답 인터셉터: 401 에러 시 로그아웃 처리 (로그인/회원가입 요청 제외)
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
-    if (error.response?.status === 401) {
+    const requestUrl = error.config?.url || '';
+    const isAuthRequest = requestUrl.includes('/auth/');
+
+    // 인증 요청이 아닌 경우에만 리다이렉트
+    if (error.response?.status === 401 && !isAuthRequest) {
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
@@ -44,14 +48,14 @@ api.interceptors.response.use(
 // ==================== 인증 API ====================
 
 /** 회원가입 */
-export const register = async (email: string, password: string, name: string): Promise<User> => {
-  const response = await api.post<User>('/auth/register', { email, password, name });
+export const register = async (username: string, password: string, name: string): Promise<User> => {
+  const response = await api.post<User>('/auth/register', { username, password, name });
   return response.data;
 };
 
 /** 로그인 */
-export const login = async (email: string, password: string): Promise<LoginResponse> => {
-  const response = await api.post<LoginResponse>('/auth/login', { email, password });
+export const login = async (username: string, password: string): Promise<LoginResponse> => {
+  const response = await api.post<LoginResponse>('/auth/login', { username, password });
   return response.data;
 };
 
@@ -152,6 +156,153 @@ export const updateWord = async (wordId: number, word: Omit<Word, 'id'>): Promis
 /** 단어 삭제 */
 export const deleteWord = async (wordId: number): Promise<void> => {
   await api.delete(`/words/${wordId}`);
+};
+
+// ==================== 학습 API ====================
+
+export type AttemptType = 'LISTEN' | 'FLASH' | 'QUIZ';
+
+export interface AttemptRequest {
+  wordId: number;
+  attemptType: AttemptType;
+  correct?: boolean;
+  selectedAnswer?: string;
+}
+
+export interface QuizResultRequest {
+  dayId: number;
+  correctCount: number;
+  totalCount: number;
+  attempts?: AttemptRequest[];
+}
+
+export interface UserStats {
+  userId: number;
+  userName: string;
+  username: string;
+  totalAttempts: number;
+  listenCount: number;
+  flashCount: number;
+  quizAttempts: number;
+  quizCorrect: number;
+  quizWrong: number;
+  accuracyRate: number;
+  todayAttempts: number;
+  lastStudyAt: string | null;
+  createdAt: string;
+}
+
+export interface WrongWord {
+  wordId: number;
+  english: string;
+  korean: string;
+  wrongCount: number;
+}
+
+export interface QuizHistory {
+  id: number;
+  dayTitle: string;
+  dayNumber: number;
+  levelName: string;
+  correctCount: number;
+  totalCount: number;
+  score: number;
+  completedAt: string;
+}
+
+export interface UserDetailStats {
+  stats: UserStats;
+  wrongWords: WrongWord[];
+  recentQuizzes: QuizHistory[];
+}
+
+/** 학습 기록 저장 */
+export const recordAttempt = async (request: AttemptRequest): Promise<void> => {
+  await api.post('/learning/attempt', request);
+};
+
+/** 퀴즈 결과 저장 */
+export const saveQuizResult = async (request: QuizResultRequest): Promise<void> => {
+  await api.post('/learning/quiz-result', request);
+};
+
+/** 내 학습 통계 조회 */
+export const getMyStats = async (): Promise<UserStats> => {
+  const response = await api.get<UserStats>('/learning/my-stats');
+  return response.data;
+};
+
+/** 내 상세 학습 통계 조회 */
+export const getMyDetailStats = async (): Promise<UserDetailStats> => {
+  const response = await api.get<UserDetailStats>('/learning/my-stats/detail');
+  return response.data;
+};
+
+// ==================== 관리자 API ====================
+
+export interface AdminUser {
+  id: number;
+  username: string;
+  name: string;
+  role: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OverallStats {
+  totalUsers: number;
+  activeUsersToday: number;
+  totalAttempts: number;
+  totalQuizzes: number;
+  averageAccuracy: number;
+}
+
+/** 전체 사용자 목록 (관리자) */
+export const getAdminUsers = async (): Promise<AdminUser[]> => {
+  const response = await api.get<AdminUser[]>('/admin/users');
+  return response.data;
+};
+
+/** 사용자 활성화 토글 (관리자) */
+export const toggleUserActive = async (userId: number): Promise<AdminUser> => {
+  const response = await api.patch<AdminUser>(`/admin/users/${userId}/active`);
+  return response.data;
+};
+
+/** 사용자 역할 변경 (관리자) */
+export const changeUserRole = async (userId: number, role: 'ADMIN' | 'STUDENT'): Promise<AdminUser> => {
+  const response = await api.patch<AdminUser>(`/admin/users/${userId}/role?role=${role}`);
+  return response.data;
+};
+
+/** 사용자 정보 수정 (관리자) */
+export const updateUser = async (userId: number, data: { name?: string; username?: string }): Promise<AdminUser> => {
+  const response = await api.put<AdminUser>(`/admin/users/${userId}`, data);
+  return response.data;
+};
+
+/** 사용자 삭제 (관리자) */
+export const deleteUser = async (userId: number): Promise<void> => {
+  await api.delete(`/admin/users/${userId}`);
+};
+
+/** 전체 사용자 학습 통계 (관리자) */
+export const getAllUserStats = async (): Promise<UserStats[]> => {
+  const response = await api.get<UserStats[]>('/admin/stats/users');
+  return response.data;
+};
+
+/** 특정 사용자 상세 통계 (관리자) */
+export const getUserDetailStats = async (userId: number): Promise<UserDetailStats> => {
+  const response = await api.get<UserDetailStats>(`/admin/stats/users/${userId}`);
+  return response.data;
+};
+
+/** 전체 통계 요약 (관리자) */
+export const getOverallStats = async (): Promise<OverallStats> => {
+  const response = await api.get<OverallStats>('/admin/stats/overall');
+  return response.data;
 };
 
 export default api;

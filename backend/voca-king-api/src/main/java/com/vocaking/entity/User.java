@@ -27,9 +27,9 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** 이메일 (로그인 ID) */
-    @Column(nullable = false, unique = true, length = 100)
-    private String email;
+    /** 아이디 (로그인 ID) */
+    @Column(nullable = false, unique = true, length = 50)
+    private String username;
 
     /** 암호화된 비밀번호 */
     @Column(nullable = false)

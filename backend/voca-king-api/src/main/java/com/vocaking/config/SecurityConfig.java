@@ -75,6 +75,12 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/api/words/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/words/**").hasRole("ADMIN")
 
+                // TTS API (인증된 사용자)
+                .requestMatchers("/api/tts/**").authenticated()
+
+                // 학습 기록 API (인증된 사용자)
+                .requestMatchers("/api/learning/**").authenticated()
+
                 // 관리자 전용 경로
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
@@ -104,7 +110,7 @@ public class SecurityConfig {
             "https://*.vercel.app",        // Vercel 배포
             "https://*.netlify.app"        // Netlify 배포
         ));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
