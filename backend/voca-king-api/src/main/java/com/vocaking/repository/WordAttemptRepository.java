@@ -49,4 +49,7 @@ public interface WordAttemptRepository extends JpaRepository<WordAttempt, Long> 
     /** 오늘 학습한 사용자 수 */
     @Query("SELECT COUNT(DISTINCT wa.user.id) FROM WordAttempt wa WHERE wa.createdAt >= :today")
     long countActiveUsersToday(@Param("today") LocalDateTime today);
+
+    /** 사용자의 모든 학습 기록 삭제 */
+    void deleteByUserId(Long userId);
 }

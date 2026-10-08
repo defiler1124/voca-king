@@ -21,4 +21,7 @@ public interface QuizResultRepository extends JpaRepository<QuizResult, Long> {
 
     /** 사용자의 특정 Day 퀴즈 결과 목록 */
     List<QuizResult> findByUserIdAndDayIdOrderByCompletedAtDesc(Long userId, Long dayId);
+
+    /** 사용자의 모든 퀴즈 결과 삭제 */
+    void deleteByUserId(Long userId);
 }

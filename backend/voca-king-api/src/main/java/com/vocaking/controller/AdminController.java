@@ -2,7 +2,9 @@ package com.vocaking.controller;
 
 import com.vocaking.dto.LearningDto.*;
 import com.vocaking.entity.User;
+import com.vocaking.repository.QuizResultRepository;
 import com.vocaking.repository.UserRepository;
+import com.vocaking.repository.WordAttemptRepository;
 import com.vocaking.service.LearningService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,6 +30,8 @@ public class AdminController {
 
     private final UserRepository userRepository;
     private final LearningService learningService;
+    private final WordAttemptRepository wordAttemptRepository;
+    private final QuizResultRepository quizResultRepository;
 
     /**
      * 전체 사용자 목록 조회
@@ -125,9 +129,14 @@ public class AdminController {
      *
      * DELETE /api/admin/users/{userId}
      */
-    @Operation(summary = "사용자 삭제", description = "사용자를 삭제합니다")
+    @Operation(summary = "사용자 삭제", description = "사용자와 관련 학습 기록을 모두 삭제합니다")
     @DeleteMapping("/users/{userId}")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
+        // 관련 데이터 먼저 삭제 (외래 키 제약 조건)
+        wordAttemptRepository.deleteByUserId(userId);
+        quizResultRepository.deleteByUserId(userId);
+        // 사용자 삭제
         userRepository.deleteById(userId);
         return ResponseEntity.ok().build();
     }
