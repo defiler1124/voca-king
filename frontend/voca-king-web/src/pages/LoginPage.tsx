@@ -1,15 +1,33 @@
 /**
  * 로그인 페이지 - 세련된 디자인
  */
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
+
+const REMEMBER_KEY = 'voca_king_remember';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const { login, isLoading, error, clearError } = useAuthStore();
   const navigate = useNavigate();
+
+  // 저장된 로그인 정보 불러오기
+  useEffect(() => {
+    const saved = localStorage.getItem(REMEMBER_KEY);
+    if (saved) {
+      try {
+        const { username: savedUsername, password: savedPassword } = JSON.parse(atob(saved));
+        setUsername(savedUsername || '');
+        setPassword(savedPassword || '');
+        setRememberMe(true);
+      } catch {
+        localStorage.removeItem(REMEMBER_KEY);
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -17,6 +35,15 @@ export default function LoginPage() {
 
     try {
       const user = await login(username, password);
+
+      // 로그인 성공 시 기억하기 처리
+      if (rememberMe) {
+        const data = btoa(JSON.stringify({ username, password }));
+        localStorage.setItem(REMEMBER_KEY, data);
+      } else {
+        localStorage.removeItem(REMEMBER_KEY);
+      }
+
       if (user?.role === 'ADMIN') {
         navigate('/admin');
       } else {
@@ -131,7 +158,7 @@ export default function LoginPage() {
             />
           </div>
 
-          <div style={{ marginBottom: '28px' }}>
+          <div style={{ marginBottom: '20px' }}>
             <label style={{
               display: 'block',
               fontSize: '13px',
@@ -160,6 +187,32 @@ export default function LoginPage() {
               placeholder="비밀번호를 입력하세요"
               required
             />
+          </div>
+
+          {/* 아이디/비밀번호 기억하기 체크박스 */}
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              cursor: 'pointer',
+              fontSize: '14px',
+              color: '#666',
+              userSelect: 'none'
+            }}>
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                style={{
+                  width: '18px',
+                  height: '18px',
+                  marginRight: '8px',
+                  accentColor: '#1B2A5B',
+                  cursor: 'pointer'
+                }}
+              />
+              아이디/비밀번호 기억하기
+            </label>
           </div>
 
           <button
