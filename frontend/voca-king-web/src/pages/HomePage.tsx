@@ -7,11 +7,11 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useWordStore } from '../stores/wordStore';
 import { speak, initTTS } from '../utils/tts';
-import { recordAttempt, saveQuizResult } from '../services/api';
+import { recordAttempt, saveQuizResult, getMyDetailStats } from '../services/api';
 import type { Word } from '../types';
-import type { AttemptRequest } from '../services/api';
+import type { AttemptRequest, UserDetailStats } from '../services/api';
 
-type ViewMode = 'cards' | 'flash' | 'final';
+type ViewMode = 'cards' | 'flash' | 'final' | 'stats';
 
 export default function HomePage() {
   const { user, logout } = useAuthStore();
@@ -39,6 +39,8 @@ export default function HomePage() {
   const [quizFinished, setQuizFinished] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [quizAttempts, setQuizAttempts] = useState<AttemptRequest[]>([]);
+  const [myStats, setMyStats] = useState<UserDetailStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
 
   // 스크롤 컨테이너 refs
   const levelScrollRef = useRef<HTMLDivElement>(null);
@@ -192,6 +194,18 @@ export default function HomePage() {
     }, 1000);
   };
 
+  const fetchMyStats = useCallback(async () => {
+    setStatsLoading(true);
+    try {
+      const data = await getMyDetailStats();
+      setMyStats(data);
+    } catch (error) {
+      console.error('통계 조회 실패:', error);
+    } finally {
+      setStatsLoading(false);
+    }
+  }, []);
+
   const handleViewChange = (mode: ViewMode) => {
     setViewMode(mode);
     if (mode === 'flash') {
@@ -199,6 +213,8 @@ export default function HomePage() {
       setShowKorean(false);
     } else if (mode === 'final') {
       startQuiz();
+    } else if (mode === 'stats') {
+      fetchMyStats();
     }
   };
 
@@ -481,6 +497,29 @@ export default function HomePage() {
         >
           <span style={{ fontSize: '16px' }}>🏆</span>
           파이널테스트
+        </button>
+        <div style={{ width: '1px', background: '#eee' }} />
+        <button
+          onClick={() => handleViewChange('stats')}
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '4px',
+            padding: '12px 0',
+            border: 'none',
+            background: 'transparent',
+            cursor: 'pointer',
+            color: viewMode === 'stats' ? '#3B5998' : '#888',
+            borderBottom: viewMode === 'stats' ? '2px solid #3B5998' : '2px solid transparent',
+            fontSize: '12px',
+            fontWeight: 600
+          }}
+        >
+          <span style={{ fontSize: '16px' }}>📊</span>
+          통계
         </button>
       </div>
 
@@ -795,7 +834,192 @@ export default function HomePage() {
                 )}
               </div>
             )}
+
+            {/* 통계 뷰 */}
+            {viewMode === 'stats' && (
+              <div style={{ padding: '20px' }}>
+                {statsLoading ? (
+                  <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
+                    통계를 불러오는 중...
+                  </div>
+                ) : myStats ? (
+                  <>
+                    {/* 통계 카드 */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '24px' }}>
+                      <div style={{
+                        background: '#E3F2FD',
+                        borderRadius: '16px',
+                        padding: '20px 16px',
+                        textAlign: 'center'
+                      }}>
+                        <div style={{ fontSize: '12px', color: '#1565C0', fontWeight: 600, marginBottom: '8px' }}>총 학습</div>
+                        <div style={{ fontSize: '28px', fontWeight: 900, color: '#0D47A1' }}>{myStats.stats.totalAttempts.toLocaleString()}</div>
+                      </div>
+                      <div style={{
+                        background: '#E8F5E9',
+                        borderRadius: '16px',
+                        padding: '20px 16px',
+                        textAlign: 'center'
+                      }}>
+                        <div style={{ fontSize: '12px', color: '#2E7D32', fontWeight: 600, marginBottom: '8px' }}>퀴즈 정답</div>
+                        <div style={{ fontSize: '28px', fontWeight: 900, color: '#1B5E20' }}>{myStats.stats.quizCorrect.toLocaleString()}</div>
+                      </div>
+                      <div style={{
+                        background: '#FFEBEE',
+                        borderRadius: '16px',
+                        padding: '20px 16px',
+                        textAlign: 'center'
+                      }}>
+                        <div style={{ fontSize: '12px', color: '#C62828', fontWeight: 600, marginBottom: '8px' }}>퀴즈 오답</div>
+                        <div style={{ fontSize: '28px', fontWeight: 900, color: '#B71C1C' }}>{myStats.stats.quizWrong.toLocaleString()}</div>
+                      </div>
+                    </div>
+
+                    {/* 오답 노트 */}
+                    {myStats.wrongWords.length > 0 && (
+                      <div style={{ marginBottom: '24px' }}>
+                        <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#C62828', marginBottom: '12px' }}>
+                          자주 틀리는 단어 (오답 노트)
+                        </h3>
+                        <div style={{
+                          background: '#fff',
+                          borderRadius: '16px',
+                          overflow: 'hidden',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
+                        }}>
+                          {myStats.wrongWords.map((word, idx) => (
+                            <div
+                              key={word.wordId}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                padding: '14px 20px',
+                                borderBottom: idx < myStats.wrongWords.length - 1 ? '1px solid #f0f0f0' : 'none'
+                              }}
+                            >
+                              <div>
+                                <span style={{ fontWeight: 700, color: '#222', marginRight: '12px' }}>{word.english}</span>
+                                <span style={{ color: '#666' }}>{word.korean}</span>
+                              </div>
+                              <span style={{ fontSize: '14px', fontWeight: 700, color: '#C62828' }}>{word.wrongCount}회</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 최근 퀴즈 결과 */}
+                    {myStats.recentQuizzes.length > 0 && (
+                      <div>
+                        <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#1B2A5B', marginBottom: '12px' }}>
+                          최근 퀴즈 결과
+                        </h3>
+                        <div style={{
+                          background: '#fff',
+                          borderRadius: '16px',
+                          overflow: 'hidden',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
+                        }}>
+                          {myStats.recentQuizzes.map((quiz, idx) => (
+                            <div
+                              key={idx}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                padding: '14px 20px',
+                                borderBottom: idx < myStats.recentQuizzes.length - 1 ? '1px solid #f0f0f0' : 'none'
+                              }}
+                            >
+                              <div>
+                                <span style={{ fontWeight: 600, color: '#222' }}>{quiz.levelName} - Day {quiz.dayNumber}</span>
+                                <span style={{ fontSize: '12px', color: '#888', marginLeft: '12px' }}>
+                                  {new Date(quiz.completedAt).toLocaleDateString('ko-KR')}
+                                </span>
+                              </div>
+                              <div style={{
+                                padding: '4px 12px',
+                                borderRadius: '20px',
+                                background: quiz.score >= 80 ? '#E8F5E9' : quiz.score >= 60 ? '#FFF8E1' : '#FFEBEE',
+                                color: quiz.score >= 80 ? '#2E7D32' : quiz.score >= 60 ? '#F57F17' : '#C62828',
+                                fontSize: '13px',
+                                fontWeight: 700
+                              }}>
+                                {quiz.correctCount}/{quiz.totalCount} ({quiz.score}점)
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {myStats.wrongWords.length === 0 && myStats.recentQuizzes.length === 0 && (
+                      <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
+                        아직 퀴즈 기록이 없습니다. 파이널테스트를 진행해보세요!
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
+                    통계를 불러올 수 없습니다.
+                  </div>
+                )}
+              </div>
+            )}
           </>
+        ) : viewMode === 'stats' ? (
+          // 통계 뷰는 Day 선택과 무관하게 표시
+          <div style={{ padding: '20px' }}>
+            {statsLoading ? (
+              <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
+                통계를 불러오는 중...
+              </div>
+            ) : myStats ? (
+              <>
+                {/* 통계 카드 */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '24px' }}>
+                  <div style={{
+                    background: '#E3F2FD',
+                    borderRadius: '16px',
+                    padding: '20px 16px',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '12px', color: '#1565C0', fontWeight: 600, marginBottom: '8px' }}>총 학습</div>
+                    <div style={{ fontSize: '28px', fontWeight: 900, color: '#0D47A1' }}>{myStats.stats.totalAttempts.toLocaleString()}</div>
+                  </div>
+                  <div style={{
+                    background: '#E8F5E9',
+                    borderRadius: '16px',
+                    padding: '20px 16px',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '12px', color: '#2E7D32', fontWeight: 600, marginBottom: '8px' }}>퀴즈 정답</div>
+                    <div style={{ fontSize: '28px', fontWeight: 900, color: '#1B5E20' }}>{myStats.stats.quizCorrect.toLocaleString()}</div>
+                  </div>
+                  <div style={{
+                    background: '#FFEBEE',
+                    borderRadius: '16px',
+                    padding: '20px 16px',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '12px', color: '#C62828', fontWeight: 600, marginBottom: '8px' }}>퀴즈 오답</div>
+                    <div style={{ fontSize: '28px', fontWeight: 900, color: '#B71C1C' }}>{myStats.stats.quizWrong.toLocaleString()}</div>
+                  </div>
+                </div>
+
+                {myStats.wrongWords.length === 0 && myStats.recentQuizzes.length === 0 && (
+                  <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
+                    아직 퀴즈 기록이 없습니다. 파이널테스트를 진행해보세요!
+                  </div>
+                )}
+              </>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
+                통계를 불러올 수 없습니다.
+              </div>
+            )}
+          </div>
         ) : (
           <div style={{
             display: 'flex',
