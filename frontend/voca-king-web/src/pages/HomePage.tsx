@@ -75,7 +75,7 @@ export default function HomePage() {
     }
   }, [days, currentDay, setCurrentDay]);
 
-  // Day 변경 시 셀프테스트/파이널테스트 초기화
+  // Day 또는 Level 변경 시 셀프테스트/파이널테스트 초기화
   useEffect(() => {
     setFlashIndex(0);
     setShowKorean(false);
@@ -85,7 +85,7 @@ export default function HomePage() {
     setQuizScore(0);
     setQuizFinished(false);
     setQuizChoices([]);
-  }, [currentDay?.id]);
+  }, [currentDay?.id, currentLevelId]);
 
   const currentLevel = levels.find((l) => l.id === currentLevelId);
 
