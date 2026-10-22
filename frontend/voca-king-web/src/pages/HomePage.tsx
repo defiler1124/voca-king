@@ -75,10 +75,16 @@ export default function HomePage() {
     }
   }, [days, currentDay, setCurrentDay]);
 
-  // Day 변경 시 셀프테스트 인덱스 초기화
+  // Day 변경 시 셀프테스트/파이널테스트 초기화
   useEffect(() => {
     setFlashIndex(0);
     setShowKorean(false);
+    // 파이널테스트 초기화
+    setShuffledQuizWords([]);
+    setQuizIndex(0);
+    setQuizScore(0);
+    setQuizFinished(false);
+    setQuizChoices([]);
   }, [currentDay?.id]);
 
   const currentLevel = levels.find((l) => l.id === currentLevelId);
