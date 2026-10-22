@@ -111,8 +111,10 @@ export default function HomePage() {
   };
 
   const flashNext = () => {
-    if (currentDay && flashIndex < currentDay.words.length - 1) {
-      setFlashIndex(flashIndex + 1);
+    if (currentDay) {
+      // 마지막 카드면 첫 번째로, 아니면 다음으로
+      const nextIndex = flashIndex >= currentDay.words.length - 1 ? 0 : flashIndex + 1;
+      setFlashIndex(nextIndex);
       setShowKorean(false);
     }
   };
@@ -688,7 +690,6 @@ export default function HomePage() {
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                     <button
                       onClick={flashNext}
-                      disabled={flashIndex === currentDay.words.length - 1}
                       style={{
                         width: '48px',
                         height: '48px',
@@ -697,8 +698,7 @@ export default function HomePage() {
                         border: 'none',
                         fontSize: '18px',
                         color: '#fff',
-                        cursor: flashIndex === currentDay.words.length - 1 ? 'default' : 'pointer',
-                        opacity: flashIndex === currentDay.words.length - 1 ? 0.3 : 1
+                        cursor: 'pointer'
                       }}
                     >
                       ▶
