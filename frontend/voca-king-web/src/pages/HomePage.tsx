@@ -39,6 +39,7 @@ export default function HomePage() {
   const [quizFinished, setQuizFinished] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [quizAttempts, setQuizAttempts] = useState<AttemptRequest[]>([]);
+  const [shuffledQuizWords, setShuffledQuizWords] = useState<Word[]>([]);
   const [myStats, setMyStats] = useState<UserDetailStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(false);
 
@@ -121,13 +122,13 @@ export default function HomePage() {
     }
   };
 
-  const buildQuizQuestion = useCallback((idx: number) => {
-    if (!currentDay || !currentDay.words[idx]) return;
-    const correctWord = currentDay.words[idx];
+  const buildQuizQuestion = useCallback((idx: number, words: Word[]) => {
+    if (!words || !words[idx]) return;
+    const correctWord = words[idx];
     const correctAnswer = correctWord.korean;
 
     // allWordsInLevel이 비어있으면 현재 Day 단어 사용
-    const wordPool = allWordsInLevel.length > 0 ? allWordsInLevel : currentDay.words;
+    const wordPool = allWordsInLevel.length > 0 ? allWordsInLevel : words;
     const otherWords = wordPool.filter(w => w.korean !== correctAnswer);
     const shuffled = otherWords.sort(() => Math.random() - 0.5).slice(0, 3);
     const distractors = shuffled.map(w => w.korean);
@@ -136,9 +137,13 @@ export default function HomePage() {
     setQuizChoices(choices);
     setQuizAnswered(false);
     setSelectedAnswer(null);
-  }, [currentDay, allWordsInLevel]);
+  }, [allWordsInLevel]);
 
   const startQuiz = useCallback(() => {
+    if (!currentDay) return;
+    // 단어 순서를 랜덤으로 섞기
+    const shuffled = [...currentDay.words].sort(() => Math.random() - 0.5);
+    setShuffledQuizWords(shuffled);
     setQuizIndex(0);
     setQuizScore(0);
     setQuizFinished(false);
@@ -147,20 +152,20 @@ export default function HomePage() {
     setQuizAttempts([]);
     // 약간의 딜레이 후 첫 문제 빌드 (상태 업데이트 대기)
     setTimeout(() => {
-      buildQuizQuestion(0);
+      buildQuizQuestion(0, shuffled);
     }, 50);
-  }, [buildQuizQuestion]);
+  }, [currentDay, buildQuizQuestion]);
 
-  // 파이널테스트 뷰에서 currentDay가 로드되면 퀴즈 빌드
+  // 파이널테스트 뷰에서 currentDay가 로드되면 퀴즈 시작
   useEffect(() => {
-    if (viewMode === 'final' && currentDay && currentDay.words.length > 0 && quizChoices.length === 0) {
-      buildQuizQuestion(0);
+    if (viewMode === 'final' && currentDay && currentDay.words.length > 0 && shuffledQuizWords.length === 0) {
+      startQuiz();
     }
-  }, [viewMode, currentDay, quizChoices.length, buildQuizQuestion]);
+  }, [viewMode, currentDay, shuffledQuizWords.length, startQuiz]);
 
   const selectQuizAnswer = (answer: string) => {
-    if (quizAnswered || !currentDay) return;
-    const currentWord = currentDay.words[quizIndex];
+    if (quizAnswered || shuffledQuizWords.length === 0) return;
+    const currentWord = shuffledQuizWords[quizIndex];
     const correctAnswer = currentWord.korean;
     const isCorrect = answer === correctAnswer;
     setSelectedAnswer(answer);
@@ -181,19 +186,21 @@ export default function HomePage() {
     setQuizAttempts(newAttempts);
 
     setTimeout(() => {
-      if (quizIndex < currentDay.words.length - 1) {
+      if (quizIndex < shuffledQuizWords.length - 1) {
         const nextIdx = quizIndex + 1;
         setQuizIndex(nextIdx);
-        buildQuizQuestion(nextIdx);
+        buildQuizQuestion(nextIdx, shuffledQuizWords);
       } else {
         setQuizFinished(true);
         // 퀴즈 결과 저장
-        saveQuizResult({
-          dayId: currentDay.id,
-          correctCount: newScore,
-          totalCount: currentDay.words.length,
-          attempts: newAttempts
-        }).catch(() => {});
+        if (currentDay) {
+          saveQuizResult({
+            dayId: currentDay.id,
+            correctCount: newScore,
+            totalCount: shuffledQuizWords.length,
+            attempts: newAttempts
+          }).catch(() => {});
+        }
       }
     }, 1000);
   };
@@ -710,12 +717,12 @@ export default function HomePage() {
             )}
 
             {/* 퀴즈 뷰 */}
-            {viewMode === 'final' && (
+            {viewMode === 'final' && shuffledQuizWords.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '20px' }}>
                 {!quizFinished ? (
                   <>
                     <div style={{ textAlign: 'center', fontSize: '14px', color: '#888', fontWeight: 600, marginBottom: '16px' }}>
-                      {quizIndex + 1} / {currentDay.words.length}
+                      {quizIndex + 1} / {shuffledQuizWords.length}
                     </div>
                     <div style={{
                       background: '#1B2A5B',
@@ -725,7 +732,7 @@ export default function HomePage() {
                       marginBottom: '24px'
                     }}>
                       <div style={{ fontSize: '28px', fontWeight: 900, color: '#fff', marginBottom: '8px' }}>
-                        {currentDay.words[quizIndex].english}
+                        {shuffledQuizWords[quizIndex].english}
                       </div>
                       <div style={{ fontSize: '13px', color: '#aabbdd' }}>
                         알맞은 한글 뜻을 고르세요
@@ -734,7 +741,7 @@ export default function HomePage() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                       {quizChoices.map((choice, idx) => {
                         const labels = ['A', 'B', 'C', 'D'];
-                        const isCorrectAnswer = choice === currentDay.words[quizIndex].korean;
+                        const isCorrectAnswer = choice === shuffledQuizWords[quizIndex].korean;
                         const isSelectedWrong = quizAnswered && selectedAnswer === choice && !isCorrectAnswer;
 
                         let bg = '#fff';
@@ -806,13 +813,13 @@ export default function HomePage() {
                     gap: '16px'
                   }}>
                     <div style={{ fontSize: '60px' }}>
-                      {quizScore === currentDay.words.length ? '🎉' : quizScore >= currentDay.words.length * 0.7 ? '👍' : '💪'}
+                      {quizScore === shuffledQuizWords.length ? '🎉' : quizScore >= shuffledQuizWords.length * 0.7 ? '👍' : '💪'}
                     </div>
                     <div style={{ fontSize: '40px', fontWeight: 900, color: '#1B2A5B' }}>
-                      {quizScore} / {currentDay.words.length}
+                      {quizScore} / {shuffledQuizWords.length}
                     </div>
                     <div style={{ fontSize: '16px', color: '#888' }}>
-                      {quizScore === currentDay.words.length ? '완벽해요!' : quizScore >= currentDay.words.length * 0.7 ? '잘했어요!' : '다시 도전해보세요!'}
+                      {quizScore === shuffledQuizWords.length ? '완벽해요!' : quizScore >= shuffledQuizWords.length * 0.7 ? '잘했어요!' : '다시 도전해보세요!'}
                     </div>
                     <button
                       onClick={startQuiz}
