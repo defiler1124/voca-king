@@ -50,6 +50,7 @@ export default function HomePageV2() {
   const [quizAttempts, setQuizAttempts] = useState<AttemptRequest[]>([]);
   const [shuffledQuizWords, setShuffledQuizWords] = useState<Word[]>([]);
   const [showMusicPanel, setShowMusicPanel] = useState(false);
+  const [seenCards, setSeenCards] = useState<Set<number>>(new Set());
 
   const dayScrollRef = useRef<HTMLDivElement>(null);
   const levelScrollRef = useRef<HTMLDivElement>(null);
@@ -88,8 +89,10 @@ export default function HomePageV2() {
   useEffect(() => {
     setFlashIndex(0); setShowKorean(false); setShuffledQuizWords([]);
     setQuizIndex(0); setQuizScore(0); setQuizFinished(false); setQuizChoices([]);
-    setActiveGame(null);
+    setActiveGame(null); setSeenCards(new Set());
   }, [currentDay?.id, currentLevelId]);
+
+  const flashCleared = currentDay ? seenCards.size >= currentDay.words.length : false;
 
   const currentLevel = levels.find((l) => l.id === currentLevelId);
 
@@ -104,6 +107,7 @@ export default function HomePageV2() {
     if (!showKorean && currentDay) {
       speak(currentDay.words[flashIndex].english);
       recordAttempt({ wordId: currentDay.words[flashIndex].id, attemptType: 'FLASH', correct: true }).catch(() => {});
+      setSeenCards(prev => new Set(prev).add(flashIndex));
     }
     setShowKorean(!showKorean);
   };
@@ -267,13 +271,25 @@ export default function HomePageV2() {
         <div className="v2-word-scroll">
           <div className="v2-hub-head"><div className="v2-hub-title">SELF TEST</div></div>
           <div className="v2-hub-grid">
-            {GAME_STAGES.map((stage) => (
-              <button key={stage.id} className={`v2-hub-card ${stage.theme}`} onClick={() => setActiveGame(stage.id)}>
-                <div className="emoji">{stage.emoji}</div>
-                <div className="no">STAGE {stage.no}</div>
-                <div className="name">{stage.name}</div>
-              </button>
-            ))}
+            {GAME_STAGES.map((stage) => {
+              const isLocked = (stage.id === 'match' && !flashCleared) ||
+                               (stage.id === 'pop') ||
+                               (stage.id === 'listen');
+              return (
+                <button
+                  key={stage.id}
+                  className={`v2-hub-card ${stage.theme} ${isLocked ? 'locked' : ''}`}
+                  onClick={() => !isLocked && setActiveGame(stage.id)}
+                  disabled={isLocked}
+                >
+                  {isLocked && <div className="lock-icon">🔒</div>}
+                  <div className="emoji">{stage.emoji}</div>
+                  <div className="no">STAGE {stage.no}</div>
+                  <div className="name">{stage.name}</div>
+                  {stage.id === 'flash' && flashCleared && <div className="clear-badge">✓ 클리어</div>}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -283,18 +299,36 @@ export default function HomePageV2() {
           <div className="v2-flash-header">
             <button className="v2-flash-back" onClick={() => setActiveGame(null)}>← 목록으로</button>
             <div className="v2-flash-title">📚 플래시카드</div>
-            <div className="v2-flash-progress">{flashIndex + 1} / {currentDay.words.length}</div>
+            <div className="v2-flash-progress">{seenCards.size} / {currentDay.words.length}</div>
           </div>
           <div className="v2-flash-content">
+            <div className="v2-flash-guide">
+              {flashCleared ? '🎉 모든 카드를 확인했습니다!' : '카드를 탭해서 뜻을 확인하세요 (모든 카드를 확인하면 클리어)'}
+            </div>
             <div className={`v2-flash-card ${showKorean ? 'open' : ''}`} onClick={toggleFlashKr}>
-              <div className="v2-flash-num">#{flashIndex + 1}</div>
+              <div className="v2-flash-num">{flashIndex + 1} / {currentDay.words.length}</div>
               <div className="v2-flash-en">{currentDay.words[flashIndex].english}</div>
-              {showKorean ? <div className="v2-flash-kr">{currentDay.words[flashIndex].korean}</div> : <div className="v2-flash-hint">탭하여 뜻 보기</div>}
+              {showKorean ? (
+                <div className="v2-flash-kr">{currentDay.words[flashIndex].korean}</div>
+              ) : (
+                <>
+                  <div className="v2-flash-question">?</div>
+                  <div className="v2-flash-hint">뜻을 떠올린 뒤 탭 👆</div>
+                </>
+              )}
             </div>
             <div className="v2-flash-nav">
-              <button className="v2-flash-btn" onClick={flashPrev}>‹</button>
+              <button className="v2-flash-btn" onClick={flashPrev}>◀</button>
               <button className="v2-flash-btn speak" onClick={() => speak(currentDay.words[flashIndex].english)}>🔊</button>
-              <button className="v2-flash-btn" onClick={flashNext}>›</button>
+              <button className="v2-flash-btn" onClick={flashNext}>▶</button>
+            </div>
+            <div className="v2-flash-dots">
+              {currentDay.words.map((_, idx) => (
+                <span
+                  key={idx}
+                  className={`v2-flash-dot ${seenCards.has(idx) ? 'seen' : ''} ${idx === flashIndex ? 'current' : ''}`}
+                />
+              ))}
             </div>
           </div>
         </div>
