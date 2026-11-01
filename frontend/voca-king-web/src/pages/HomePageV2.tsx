@@ -51,6 +51,7 @@ export default function HomePageV2() {
   const [shuffledQuizWords, setShuffledQuizWords] = useState<Word[]>([]);
   const [showMusicPanel, setShowMusicPanel] = useState(false);
   const [seenCards, setSeenCards] = useState<Set<number>>(new Set());
+  const [flashClearedDays, setFlashClearedDays] = useState<Set<number>>(new Set());
 
   const dayScrollRef = useRef<HTMLDivElement>(null);
   const levelScrollRef = useRef<HTMLDivElement>(null);
@@ -92,7 +93,15 @@ export default function HomePageV2() {
     setActiveGame(null); setSeenCards(new Set());
   }, [currentDay?.id, currentLevelId]);
 
-  const flashCleared = currentDay ? seenCards.size >= currentDay.words.length : false;
+  // 현재 Day의 플래시카드 클리어 여부 (이번 세션에서 봤거나, 이전에 클리어했거나)
+  const flashCleared = currentDay ? (seenCards.size >= currentDay.words.length || flashClearedDays.has(currentDay.id)) : false;
+
+  // 모든 카드를 보면 클리어 상태 저장
+  useEffect(() => {
+    if (currentDay && seenCards.size >= currentDay.words.length && !flashClearedDays.has(currentDay.id)) {
+      setFlashClearedDays(prev => new Set(prev).add(currentDay.id));
+    }
+  }, [seenCards.size, currentDay, flashClearedDays]);
 
   const currentLevel = levels.find((l) => l.id === currentLevelId);
 
