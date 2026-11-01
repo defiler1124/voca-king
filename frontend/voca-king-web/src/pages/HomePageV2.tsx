@@ -52,6 +52,13 @@ export default function HomePageV2() {
   const [showMusicPanel, setShowMusicPanel] = useState(false);
 
   const dayScrollRef = useRef<HTMLDivElement>(null);
+  const levelScrollRef = useRef<HTMLDivElement>(null);
+  const [levelDragging, setLevelDragging] = useState(false);
+  const [levelStartX, setLevelStartX] = useState(0);
+  const [levelScrollLeft, setLevelScrollLeft] = useState(0);
+  const [dayDragging, setDayDragging] = useState(false);
+  const [dayStartX, setDayStartX] = useState(0);
+  const [dayScrollLeftPos, setDayScrollLeftPos] = useState(0);
   const bgm = useBgm();
   const bgmStartRef = useRef(bgm.start);
   bgmStartRef.current = bgm.start;
@@ -143,6 +150,35 @@ export default function HomePageV2() {
 
   const scrollDays = (dir: 'left' | 'right') => { dayScrollRef.current?.scrollBy({ left: dir === 'left' ? -200 : 200, behavior: 'smooth' }); };
 
+  const scrollLevels = (dir: 'left' | 'right') => { levelScrollRef.current?.scrollBy({ left: dir === 'left' ? -150 : 150, behavior: 'smooth' }); };
+  const onLevelMouseDown = (e: React.MouseEvent) => {
+    setLevelDragging(true);
+    setLevelStartX(e.pageX - (levelScrollRef.current?.offsetLeft || 0));
+    setLevelScrollLeft(levelScrollRef.current?.scrollLeft || 0);
+  };
+  const onLevelMouseMove = (e: React.MouseEvent) => {
+    if (!levelDragging) return;
+    e.preventDefault();
+    const x = e.pageX - (levelScrollRef.current?.offsetLeft || 0);
+    const walk = (x - levelStartX) * 1.5;
+    if (levelScrollRef.current) levelScrollRef.current.scrollLeft = levelScrollLeft - walk;
+  };
+  const onLevelMouseUp = () => setLevelDragging(false);
+
+  const onDayMouseDown = (e: React.MouseEvent) => {
+    setDayDragging(true);
+    setDayStartX(e.pageX - (dayScrollRef.current?.offsetLeft || 0));
+    setDayScrollLeftPos(dayScrollRef.current?.scrollLeft || 0);
+  };
+  const onDayMouseMove = (e: React.MouseEvent) => {
+    if (!dayDragging) return;
+    e.preventDefault();
+    const x = e.pageX - (dayScrollRef.current?.offsetLeft || 0);
+    const walk = (x - dayStartX) * 1.5;
+    if (dayScrollRef.current) dayScrollRef.current.scrollLeft = dayScrollLeftPos - walk;
+  };
+  const onDayMouseUp = () => setDayDragging(false);
+
   return (
     <div className="v2-container">
       <SceneBackground />
@@ -159,13 +195,24 @@ export default function HomePageV2() {
       </header>
 
       {/* Level Bar */}
-      <div className="v2-lv-bar">
-        {levels.map((level) => (
-          <button key={level.id} className={`v2-lv-chip ${currentLevelId === level.id ? 'active' : ''}`} onClick={() => setCurrentLevel(level.id)}>
-            <b>{LEVEL_EMOJIS[level.id] || '📚'} {level.name.replace('Lv.', '').replace(' Newbie', '').replace(' Master', '').replace(' Grand Master', '').replace(' Legend', '').replace(' Voca King', '')}</b>
-            <span>{level.name.includes('Newbie') ? 'Newbie' : level.name.includes('Master') ? 'Master' : level.name.includes('Legend') ? 'Legend' : 'King'}</span>
-          </button>
-        ))}
+      <div className="v2-lv-wrap">
+        <button className="v2-lv-arrow left" onClick={() => scrollLevels('left')}>‹</button>
+        <div
+          className={`v2-lv-bar ${levelDragging ? 'dragging' : ''}`}
+          ref={levelScrollRef}
+          onMouseDown={onLevelMouseDown}
+          onMouseMove={onLevelMouseMove}
+          onMouseUp={onLevelMouseUp}
+          onMouseLeave={onLevelMouseUp}
+        >
+          {levels.map((level) => (
+            <button key={level.id} className={`v2-lv-chip ${currentLevelId === level.id ? 'active' : ''}`} onClick={() => setCurrentLevel(level.id)}>
+              <b>{LEVEL_EMOJIS[level.id] || '📚'} {level.name.replace('Lv.', '').replace(' Newbie', '').replace(' Master', '').replace(' Grand Master', '').replace(' Legend', '').replace(' Voca King', '')}</b>
+              <span>{level.name.includes('Newbie') ? 'Newbie' : level.name.includes('Master') ? 'Master' : level.name.includes('Legend') ? 'Legend' : 'King'}</span>
+            </button>
+          ))}
+        </div>
+        <button className="v2-lv-arrow right" onClick={() => scrollLevels('right')}>›</button>
       </div>
 
       {/* Tabs */}
@@ -180,7 +227,14 @@ export default function HomePageV2() {
       {/* Day Selector */}
       <div className="v2-day-wrap">
         <button className="v2-day-arrow" onClick={() => scrollDays('left')}>‹</button>
-        <div className="v2-day-selector" ref={dayScrollRef}>
+        <div
+          className={`v2-day-selector ${dayDragging ? 'dragging' : ''}`}
+          ref={dayScrollRef}
+          onMouseDown={onDayMouseDown}
+          onMouseMove={onDayMouseMove}
+          onMouseUp={onDayMouseUp}
+          onMouseLeave={onDayMouseUp}
+        >
           {days.map((day) => (
             <button key={day.id} className={`v2-day-chip ${currentDay?.id === day.id ? 'active' : ''}`} onClick={() => setCurrentDay(day.id)}>Day {day.dayNumber}</button>
           ))}
