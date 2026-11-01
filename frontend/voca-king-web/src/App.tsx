@@ -12,6 +12,7 @@ import { initTTS } from './utils/tts';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import HomePage from './pages/HomePage';
+import HomePageV2 from './pages/HomePageV2';
 import AdminPage from './pages/AdminPage';
 
 /**
@@ -96,6 +97,16 @@ function App() {
           element={
             <ProtectedRoute>
               <AdminPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* V2 새 버전 */}
+        <Route
+          path="/v2"
+          element={
+            <ProtectedRoute>
+              <HomePageV2 />
             </ProtectedRoute>
           }
         />
