@@ -212,12 +212,15 @@ export default function BananaGame({ words, allWords, onFinish, onBack }: Props)
       setMood('eat');
       setTimeout(() => setMood('happy'), 500);
 
+      let isLastWord = false;
       if (dirty) {
         setCombo(0);
         if (!missed.some(m => m.id === current.id)) {
           setMissed(prev => [...prev, current]);
         }
       } else {
+        // 마지막 단어인지 체크 (clean.size + 1 >= words.length)
+        isLastWord = clean.size + 1 >= words.length;
         setClean(prev => new Set(prev).add(current.id));
         setCombo(prev => prev + 1);
         setBanana(prev => prev + 1);
@@ -225,7 +228,12 @@ export default function BananaGame({ words, allWords, onFinish, onBack }: Props)
 
       setTimeout(() => {
         setMood('idle');
-        nextQuestion();
+        if (isLastWord) {
+          if (timerRef.current) clearInterval(timerRef.current);
+          setGameOver(true);
+        } else {
+          nextQuestion();
+        }
       }, 900);
     } else {
       playWrongSound();

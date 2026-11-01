@@ -51,7 +51,12 @@ export default function HomePageV2() {
   const [shuffledQuizWords, setShuffledQuizWords] = useState<Word[]>([]);
   const [showMusicPanel, setShowMusicPanel] = useState(false);
   const [seenCards, setSeenCards] = useState<Set<number>>(new Set());
-  const [flashClearedDays, setFlashClearedDays] = useState<Set<number>>(new Set());
+  const [flashClearedDays, setFlashClearedDays] = useState<Set<number>>(() => {
+    try {
+      const saved = localStorage.getItem('voca-king-flash-cleared');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch { return new Set(); }
+  });
 
   const dayScrollRef = useRef<HTMLDivElement>(null);
   const levelScrollRef = useRef<HTMLDivElement>(null);
@@ -99,7 +104,9 @@ export default function HomePageV2() {
   // 모든 카드를 보면 클리어 상태 저장
   useEffect(() => {
     if (currentDay && seenCards.size >= currentDay.words.length && !flashClearedDays.has(currentDay.id)) {
-      setFlashClearedDays(prev => new Set(prev).add(currentDay.id));
+      const newSet = new Set(flashClearedDays).add(currentDay.id);
+      setFlashClearedDays(newSet);
+      localStorage.setItem('voca-king-flash-cleared', JSON.stringify([...newSet]));
     }
   }, [seenCards.size, currentDay, flashClearedDays]);
 
