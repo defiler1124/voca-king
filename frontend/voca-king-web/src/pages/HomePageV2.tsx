@@ -279,9 +279,13 @@ export default function HomePageV2() {
       )}
 
       {viewMode === 'selftest' && activeGame === 'flash' && currentDay && (
-        <div className="v2-game-wrap">
-          <div className="v2-counter">{flashIndex + 1} / {currentDay.words.length}</div>
-          <div className="v2-flash-wrap">
+        <div className="v2-flash-fullscreen">
+          <div className="v2-flash-header">
+            <button className="v2-flash-back" onClick={() => setActiveGame(null)}>← 목록으로</button>
+            <div className="v2-flash-title">📚 플래시카드</div>
+            <div className="v2-flash-progress">{flashIndex + 1} / {currentDay.words.length}</div>
+          </div>
+          <div className="v2-flash-content">
             <div className={`v2-flash-card ${showKorean ? 'open' : ''}`} onClick={toggleFlashKr}>
               <div className="v2-flash-num">#{flashIndex + 1}</div>
               <div className="v2-flash-en">{currentDay.words[flashIndex].english}</div>
@@ -292,7 +296,6 @@ export default function HomePageV2() {
               <button className="v2-flash-btn speak" onClick={() => speak(currentDay.words[flashIndex].english)}>🔊</button>
               <button className="v2-flash-btn" onClick={flashNext}>›</button>
             </div>
-            <button className="v2-back-btn" onClick={() => setActiveGame(null)}>← 게임 목록</button>
           </div>
         </div>
       )}

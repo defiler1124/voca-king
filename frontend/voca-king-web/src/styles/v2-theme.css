@@ -583,6 +583,68 @@
   padding: 16px;
 }
 
+/* ── Flash Card Fullscreen ── */
+.v2-flash-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(circle at 20% 12%, rgba(130,120,255,.55) 0, transparent 45%), radial-gradient(circle at 85% 80%, rgba(255,140,200,.28) 0, transparent 45%), linear-gradient(170deg, #2b2f6b, #15193d);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.v2-flash-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+}
+
+.v2-flash-back {
+  background: rgba(0,0,0,0.3);
+  border: none;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.v2-flash-back:active {
+  background: rgba(0,0,0,0.5);
+}
+
+.v2-flash-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.v2-flash-progress {
+  background: rgba(0,0,0,0.3);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.v2-flash-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 16px;
+}
+
 .v2-flash-wrap {
   flex: 1;
   display: flex;
