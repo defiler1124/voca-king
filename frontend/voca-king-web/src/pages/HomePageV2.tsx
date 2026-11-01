@@ -144,7 +144,7 @@ export default function HomePageV2() {
     setQuizAttempts(newAttempts);
     setTimeout(() => {
       if (quizIndex < shuffledQuizWords.length - 1) { setQuizIndex(quizIndex + 1); buildQuizQuestion(quizIndex + 1, shuffledQuizWords); }
-      else { setQuizFinished(true); if (currentDay) saveQuizResult({ dayId: currentDay.id, score: newScore, totalQuestions: shuffledQuizWords.length, attempts: newAttempts }).catch(() => {}); }
+      else { setQuizFinished(true); if (currentDay) saveQuizResult({ dayId: currentDay.id, correctCount: newScore, totalCount: shuffledQuizWords.length, attempts: newAttempts }).catch(() => {}); }
     }, 1000);
   };
 
