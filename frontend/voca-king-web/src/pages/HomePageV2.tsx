@@ -105,6 +105,18 @@ export default function HomePageV2() {
     setActiveGame(null); setSeenCards(new Set());
   }, [currentDay?.id, currentLevelId]);
 
+  // 게임에서 돌아올 때 localStorage에서 클리어 상태 다시 읽기
+  useEffect(() => {
+    if (activeGame === null) {
+      try {
+        const saved = localStorage.getItem('voca-king-banana-cleared');
+        if (saved) {
+          setBananaClearedDays(new Set(JSON.parse(saved)));
+        }
+      } catch { /* ignore */ }
+    }
+  }, [activeGame]);
+
   // 현재 Day의 플래시카드 클리어 여부 (이번 세션에서 봤거나, 이전에 클리어했거나)
   const flashCleared = currentDay ? (seenCards.size >= currentDay.words.length || flashClearedDays.has(currentDay.id)) : false;
   const bananaCleared = currentDay ? bananaClearedDays.has(currentDay.id) : false;
