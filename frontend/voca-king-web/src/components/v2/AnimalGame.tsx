@@ -194,6 +194,7 @@ export default function AnimalGame({ words, allWords, onFinish, onBack }: Props)
   const [gameStarted, setGameStarted] = useState(false);
   const [showMiss, setShowMiss] = useState(false);
   const [burst, setBurst] = useState<{ x: number; y: number } | null>(null);
+  const [questionId, setQuestionId] = useState(0);
 
   const initRef = useRef(false);
   const timerRef = useRef<number | null>(null);
@@ -260,6 +261,7 @@ export default function AnimalGame({ words, allWords, onFinish, onBack }: Props)
     setLocked(false);
     setShowMiss(false);
     setBurst(null);
+    setQuestionId(prev => prev + 1);
 
     // Build 4 options
     const pool = allWords.length > 0 ? allWords : words;
@@ -464,10 +466,10 @@ export default function AnimalGame({ words, allWords, onFinish, onBack }: Props)
           <div className="ag-field" ref={fieldRef}>
             {animals.map((animal, idx) => (
               <button
-                key={idx}
+                key={`${questionId}-${idx}`}
                 className={`ag-animal ${animal.status}`}
                 style={{
-                  left: `${animal.slot * 25 + 0.5}%`,
+                  left: `${5 + animal.slot * 23}%`,
                   animationDuration: `${animal.duration}s`,
                 }}
                 onClick={() => handlePick(idx)}
