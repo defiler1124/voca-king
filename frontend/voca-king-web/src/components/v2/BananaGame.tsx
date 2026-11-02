@@ -10,6 +10,7 @@ import './BananaGame.css';
 interface Props {
   words: Word[];
   allWords: Word[];
+  dayId: number;
   onFinish: (score: number, total: number) => void;
   onBack: () => void;
 }
@@ -73,7 +74,7 @@ function playWrongSound() {
   osc.stop(now + 0.35);
 }
 
-export default function BananaGame({ words, allWords, onFinish, onBack }: Props) {
+export default function BananaGame({ words, allWords, dayId, onFinish, onBack }: Props) {
   const [queue, setQueue] = useState<Word[]>([]);
   const [current, setCurrent] = useState<Word | null>(null);
   const [clean, setClean] = useState<Set<number>>(new Set());
@@ -180,9 +181,24 @@ export default function BananaGame({ words, allWords, onFinish, onBack }: Props)
 
   useEffect(() => {
     if (gameOver) {
-      onFinish(scoreRef.current, words.length);
+      const score = scoreRef.current;
+      const total = words.length;
+      // 완벽 클리어 시 직접 localStorage에 저장
+      if (score === total) {
+        try {
+          const saved = localStorage.getItem('voca-king-banana-cleared');
+          const clearedDays: number[] = saved ? JSON.parse(saved) : [];
+          if (!clearedDays.includes(dayId)) {
+            clearedDays.push(dayId);
+            localStorage.setItem('voca-king-banana-cleared', JSON.stringify(clearedDays));
+          }
+        } catch (e) {
+          console.error('Failed to save banana clear state', e);
+        }
+      }
+      onFinish(score, total);
     }
-  }, [gameOver, words.length, onFinish]);
+  }, [gameOver, words.length, dayId, onFinish]);
 
   // 선택 처리
   const handlePick = (idx: number) => {

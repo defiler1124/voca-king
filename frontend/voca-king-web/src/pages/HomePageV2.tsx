@@ -120,10 +120,9 @@ export default function HomePageV2() {
 
   // 바나나 게임 클리어 핸들러 (완벽 클리어: score === total)
   const handleBananaFinish = useCallback((score: number, total: number) => {
+    // BananaGame에서 직접 localStorage에 저장하므로, 여기서는 state만 동기화
     if (currentDay && score === total && !bananaClearedDays.has(currentDay.id)) {
-      const newSet = new Set(bananaClearedDays).add(currentDay.id);
-      setBananaClearedDays(newSet);
-      localStorage.setItem('voca-king-banana-cleared', JSON.stringify([...newSet]));
+      setBananaClearedDays(prev => new Set(prev).add(currentDay.id));
     }
   }, [currentDay, bananaClearedDays]);
 
@@ -373,6 +372,7 @@ export default function HomePageV2() {
         <BananaGame
           words={currentDay.words}
           allWords={allWordsInLevel}
+          dayId={currentDay.id}
           onFinish={handleBananaFinish}
           onBack={() => setActiveGame(null)}
         />
