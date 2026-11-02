@@ -155,15 +155,16 @@
 .ag-field-inner {
   position: relative;
   width: 100%;
-  max-width: 640px;
+  max-width: 800px;
   height: 100%;
 }
 
 /* Animal button */
 .ag-animal {
   position: absolute;
-  top: -180px;
-  width: 23%;
+  top: -150px;
+  width: 20%;
+  max-width: 90px;
   border: none;
   background: none;
   padding: 0;

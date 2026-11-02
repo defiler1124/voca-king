@@ -150,13 +150,30 @@ function AnimalSVG({ type, mood, color }: { type: AnimalType; mood: AnimalMood; 
   ) : null;
 
   return (
-    <svg viewBox="0 -50 100 150" className="ag-animal-svg">
-      {/* Parachute */}
-      <ellipse cx="50" cy="-25" rx="42" ry="22" fill={color} opacity="0.9"/>
-      <ellipse cx="50" cy="-25" rx="42" ry="22" fill="none" stroke="#fff" strokeWidth="2" opacity="0.5"/>
-      <line x1="12" y1="-10" x2="30" y2="35" stroke={color} strokeWidth="2"/>
-      <line x1="88" y1="-10" x2="70" y2="35" stroke={color} strokeWidth="2"/>
-      <line x1="50" y1="3" x2="50" y2="35" stroke={color} strokeWidth="2"/>
+    <svg viewBox="0 -55 100 155" className="ag-animal-svg">
+      {/* Parachute - dome with panels */}
+      <defs>
+        <linearGradient id={`chute-${color.slice(1)}`} x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#fff" stopOpacity="0.4"/>
+          <stop offset="50%" stopColor={color} stopOpacity="1"/>
+          <stop offset="100%" stopColor={color} stopOpacity="0.8"/>
+        </linearGradient>
+      </defs>
+      {/* Main canopy */}
+      <ellipse cx="50" cy="-28" rx="44" ry="24" fill={`url(#chute-${color.slice(1)})`}/>
+      {/* Panel dividers */}
+      <path d="M50 -52 Q50 -28 50 -4" stroke="#fff" strokeWidth="1.5" opacity="0.6" fill="none"/>
+      <path d="M20 -38 Q35 -28 50 -4" stroke="#fff" strokeWidth="1" opacity="0.4" fill="none"/>
+      <path d="M80 -38 Q65 -28 50 -4" stroke="#fff" strokeWidth="1" opacity="0.4" fill="none"/>
+      {/* Highlight */}
+      <ellipse cx="35" cy="-35" rx="12" ry="8" fill="#fff" opacity="0.3"/>
+      {/* Canopy edge */}
+      <path d="M6 -28 Q50 5 94 -28" stroke={color} strokeWidth="3" fill="none" opacity="0.8"/>
+      {/* Strings */}
+      <line x1="10" y1="-20" x2="35" y2="32" stroke="#555" strokeWidth="1.5" opacity="0.7"/>
+      <line x1="30" y1="-8" x2="42" y2="32" stroke="#555" strokeWidth="1.5" opacity="0.7"/>
+      <line x1="70" y1="-8" x2="58" y2="32" stroke="#555" strokeWidth="1.5" opacity="0.7"/>
+      <line x1="90" y1="-20" x2="65" y2="32" stroke="#555" strokeWidth="1.5" opacity="0.7"/>
       {/* Animal */}
       {ears}
       <ellipse cx="50" cy="62" rx="34" ry="30" fill={cfg.head}/>
