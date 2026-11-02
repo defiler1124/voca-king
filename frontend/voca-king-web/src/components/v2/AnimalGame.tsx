@@ -10,7 +10,7 @@ import './AnimalGame.css';
 interface Props {
   words: Word[];
   allWords: Word[];
-  onFinish: (missed: Word[]) => void;
+  onFinish: (score: number, total: number) => void;
   onBack: () => void;
 }
 
@@ -316,9 +316,9 @@ export default function AnimalGame({ words, allWords, onFinish, onBack }: Props)
 
   useEffect(() => {
     if (gameOver) {
-      onFinish(missed);
+      onFinish(clean.size, words.length);
     }
-  }, [gameOver, missed, onFinish]);
+  }, [gameOver, clean.size, words.length, onFinish]);
 
   const handleMiss = (word: Word) => {
     if (gameOver || locked) return;

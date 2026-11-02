@@ -10,7 +10,7 @@ import './BananaGame.css';
 interface Props {
   words: Word[];
   allWords: Word[];
-  onFinish: (missed: Word[]) => void;
+  onFinish: (score: number, total: number) => void;
   onBack: () => void;
 }
 
@@ -179,9 +179,9 @@ export default function BananaGame({ words, allWords, onFinish, onBack }: Props)
 
   useEffect(() => {
     if (gameOver) {
-      onFinish(missed);
+      onFinish(banana, words.length);
     }
-  }, [gameOver, missed, onFinish]);
+  }, [gameOver, banana, words.length, onFinish]);
 
   // 선택 처리
   const handlePick = (idx: number) => {

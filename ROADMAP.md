@@ -5,7 +5,7 @@
 
 - **백엔드**: Spring Boot 3.x + Spring Security + JPA + MySQL
 - **프론트엔드**: React 18 + TypeScript + Tailwind CSS
-- **배포**: Railway(무료) → 카페24(유료)
+- **배포**: Vercel (프론트엔드) + Railway (백엔드/MySQL)
 
 ---
 
@@ -136,27 +136,6 @@
 
 ---
 
-## Phase 7: 카페24 호스팅 이전
-
-### 7.1 서버 준비
-- [ ] 카페24 호스팅 신청 (리눅스 서버)
-- [ ] JDK 17+ 설치
-- [ ] MySQL 8.x 설치 및 설정
-- [ ] Nginx 리버스 프록시 설정
-
-### 7.2 배포
-- [ ] 도메인 구매 및 DNS 설정
-- [ ] SSL 인증서 설정 (Let's Encrypt)
-- [ ] Spring Boot JAR 배포
-- [ ] React 빌드 파일 배포
-- [ ] 서비스 자동 시작 설정 (systemd)
-
-### 7.3 운영
-- [ ] 백업 설정
-- [ ] 모니터링 설정
-- [ ] 로그 관리
-
----
 
 ## 기술 스택 상세
 

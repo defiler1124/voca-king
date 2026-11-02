@@ -1,0 +1,16 @@
+{
+  "services": {
+    "voca-king-api": {
+      "root": "backend/voca-king-api"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": {
+        "type": "service",
+        "service": "voca-king-api"
+      }
+    }
+  ]
+}
