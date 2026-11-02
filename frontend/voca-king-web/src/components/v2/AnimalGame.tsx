@@ -463,52 +463,54 @@ export default function AnimalGame({ words, allWords, onFinish, onBack }: Props)
           </div>
 
           {/* Falling animals */}
-          <div className="ag-field" ref={fieldRef}>
-            {animals.map((animal, idx) => (
-              <button
-                key={`${questionId}-${idx}`}
-                className={`ag-animal ${animal.status}`}
-                style={{
-                  left: `${5 + animal.slot * 23}%`,
-                  animationDuration: `${animal.duration}s`,
-                }}
-                onClick={() => handlePick(idx)}
-                disabled={animal.status !== 'falling' && animal.status !== 'wrong'}
-              >
-                <div className="ag-animal-art">
-                  <AnimalSVG type={animal.type} mood={animal.mood} color={animal.color} />
-                </div>
-                <div className={`ag-animal-tag ${animal.word.length > 11 ? 'xs' : animal.word.length > 7 ? 'sm' : ''}`}>
-                  {animal.word}
-                </div>
-                {animal.status === 'wrong' && <span className="ag-rage">💢</span>}
-              </button>
-            ))}
+          <div className="ag-field">
+            <div className="ag-field-inner" ref={fieldRef}>
+              {animals.map((animal, idx) => (
+                <button
+                  key={`${questionId}-${idx}`}
+                  className={`ag-animal ${animal.status}`}
+                  style={{
+                    left: `${2 + animal.slot * 25}%`,
+                    animationDuration: `${animal.duration}s`,
+                  }}
+                  onClick={() => handlePick(idx)}
+                  disabled={animal.status !== 'falling' && animal.status !== 'wrong'}
+                >
+                  <div className="ag-animal-art">
+                    <AnimalSVG type={animal.type} mood={animal.mood} color={animal.color} />
+                  </div>
+                  <div className={`ag-animal-tag ${animal.word.length > 11 ? 'xs' : animal.word.length > 7 ? 'sm' : ''}`}>
+                    {animal.word}
+                  </div>
+                  {animal.status === 'wrong' && <span className="ag-rage">💢</span>}
+                </button>
+              ))}
 
-            {/* Burst effect */}
-            {burst && (
-              <div className="ag-burst" style={{ left: burst.x, top: burst.y }}>
-                {['✨', '🎉', '⭐', '🎊', '💥', '🌟'].map((icon, i) => (
-                  <span
-                    key={i}
-                    className="ag-spark"
-                    style={{
-                      '--angle': `${(i / 6) * 360}deg`,
-                      '--dist': `${60 + Math.random() * 40}px`,
-                    } as React.CSSProperties}
-                  >
-                    {icon}
-                  </span>
-                ))}
-              </div>
-            )}
+              {/* Burst effect */}
+              {burst && (
+                <div className="ag-burst" style={{ left: burst.x, top: burst.y }}>
+                  {['✨', '🎉', '⭐', '🎊', '💥', '🌟'].map((icon, i) => (
+                    <span
+                      key={i}
+                      className="ag-spark"
+                      style={{
+                        '--angle': `${(i / 6) * 360}deg`,
+                        '--dist': `${60 + Math.random() * 40}px`,
+                      } as React.CSSProperties}
+                    >
+                      {icon}
+                    </span>
+                  ))}
+                </div>
+              )}
 
-            {/* Miss message */}
-            {showMiss && (
-              <div className="ag-miss">
-                😵 놓쳤어요! 정답: <b>{current?.english}</b>
-              </div>
-            )}
+              {/* Miss message */}
+              {showMiss && (
+                <div className="ag-miss">
+                  😵 놓쳤어요! 정답: <b>{current?.english}</b>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Ground */}

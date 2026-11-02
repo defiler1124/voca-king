@@ -148,14 +148,22 @@
   position: relative;
   overflow: hidden;
   min-height: 300px;
+  display: flex;
+  justify-content: center;
+}
+
+.ag-field-inner {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  height: 100%;
 }
 
 /* Animal button */
 .ag-animal {
   position: absolute;
   top: -180px;
-  width: 24%;
-  max-width: 104px;
+  width: 23%;
   border: none;
   background: none;
   padding: 0;
