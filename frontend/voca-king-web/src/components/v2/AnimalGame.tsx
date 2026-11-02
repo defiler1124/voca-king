@@ -109,7 +109,7 @@ function AnimalSVG({ type, mood, color }: { type: AnimalType; mood: AnimalMood; 
   const cfg = configs[type];
   const ec = '#2b1d14';
 
-  let eyes, mouth, extra = '';
+  let eyes, mouth, extra: React.ReactNode = null;
   if (mood === 'happy') {
     eyes = <><path d="M31 63 Q38 51 45 63" stroke={ec} strokeWidth="4" fill="none" strokeLinecap="round"/><path d="M55 63 Q62 51 69 63" stroke={ec} strokeWidth="4" fill="none" strokeLinecap="round"/></>;
     mouth = <path d="M39 78 Q50 99 61 78 Z" fill="#7a1f2b" stroke="#5a1220" strokeWidth="1" strokeLinejoin="round"/>;
