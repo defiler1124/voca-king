@@ -1,0 +1,362 @@
+/**
+ * 동물 구출 팡팡 게임 스타일
+ */
+
+.ag-game {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(circle at 18% 10%, rgba(255,255,255,.55) 0, transparent 40%),
+              radial-gradient(circle at 90% 60%, rgba(255,200,230,.3) 0, transparent 45%),
+              linear-gradient(175deg, #6cc0f5, #3380d2);
+  overflow: hidden;
+  z-index: 1000;
+}
+
+/* Header */
+.ag-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+}
+
+.ag-back-btn {
+  background: rgba(0,0,0,0.3);
+  border: none;
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ag-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.ag-progress-text {
+  background: rgba(0,0,0,0.3);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* Timer */
+.ag-timer-area {
+  padding: 0 16px 8px;
+  text-align: center;
+}
+
+.ag-timer-display {
+  font-family: 'Baloo 2', sans-serif;
+  font-size: 42px;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 3px 6px rgba(0,0,0,0.4);
+  margin-bottom: 6px;
+}
+
+.ag-fuse-bar {
+  position: relative;
+  height: 20px;
+  background: linear-gradient(180deg, #1a5c8a, #0d3a5a);
+  border-radius: 10px;
+  border: 2px solid #0a2a40;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.ag-fuse-fill {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  bottom: 2px;
+  background: linear-gradient(180deg, #7dd3fc, #38bdf8);
+  border-radius: 8px;
+  transition: width 0.3s linear;
+  box-shadow: 0 0 8px rgba(125, 211, 252, 0.5);
+}
+
+/* Countdown */
+.ag-countdown {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ag-countdown-num {
+  font-family: 'Baloo 2', sans-serif;
+  font-size: 150px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 6px 0 rgba(0,0,0,0.3), 0 0 40px rgba(255,255,255,0.5);
+  animation: ag-countdown-pop 1s ease-out;
+}
+
+@keyframes ag-countdown-pop {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Game Scene */
+.ag-scene {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-height: 400px;
+}
+
+/* Question */
+.ag-question {
+  text-align: center;
+  padding: 12px 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85));
+  margin: 8px 16px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.ag-q-hint {
+  font-size: 13px;
+  color: #3b6b8c;
+  margin-bottom: 4px;
+}
+
+.ag-q-korean {
+  font-size: 24px;
+  font-weight: 900;
+  color: #d6336c;
+}
+
+/* Field */
+.ag-field {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  min-height: 300px;
+}
+
+/* Animal button */
+.ag-animal {
+  position: absolute;
+  top: -180px;
+  width: 24%;
+  max-width: 104px;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+  animation: ag-fall linear forwards;
+  z-index: 1;
+}
+
+@keyframes ag-fall {
+  from { top: -180px; }
+  to { top: calc(100% - 40px); }
+}
+
+.ag-animal.correct {
+  animation-play-state: paused !important;
+  z-index: 5;
+}
+
+.ag-animal.correct .ag-animal-art {
+  animation: ag-cheer 0.42s ease-out forwards;
+}
+
+@keyframes ag-cheer {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.2) rotate(-5deg); }
+  60% { transform: scale(1.15) rotate(5deg); }
+  100% { transform: scale(1.1) rotate(0); }
+}
+
+.ag-animal.away {
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+}
+
+.ag-animal.wrong {
+  animation-play-state: running;
+}
+
+.ag-animal.wrong .ag-animal-art {
+  animation: ag-rage-shake 0.22s linear infinite;
+}
+
+@keyframes ag-rage-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px) rotate(-2deg); }
+  75% { transform: translateX(3px) rotate(2deg); }
+}
+
+.ag-animal.wrong .ag-animal-tag {
+  background: linear-gradient(180deg, #fff0f0, #ffd0d0) !important;
+  color: #b00020;
+}
+
+/* Animal art */
+.ag-animal-art {
+  width: 100%;
+}
+
+.ag-animal-svg {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+}
+
+/* Word tag */
+.ag-animal-tag {
+  margin-top: -8px;
+  padding: 6px 10px;
+  background: linear-gradient(180deg, #fff, #f1f8ff);
+  border: 2px solid #fff;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #14405c;
+  text-align: center;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+  word-break: keep-all;
+}
+
+.ag-animal-tag.sm { font-size: 13px; }
+.ag-animal-tag.xs { font-size: 11px; }
+
+/* Rage icon */
+.ag-rage {
+  position: absolute;
+  top: 20px;
+  right: -5px;
+  font-size: 24px;
+  animation: ag-rage-pop 0.3s ease-in-out infinite alternate;
+}
+
+@keyframes ag-rage-pop {
+  from { transform: scale(1) rotate(-10deg); }
+  to { transform: scale(1.2) rotate(10deg); }
+}
+
+/* Burst effect */
+.ag-burst {
+  position: absolute;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.ag-spark {
+  position: absolute;
+  font-size: 20px;
+  animation: ag-spark-fly 0.8s ease-out forwards;
+}
+
+@keyframes ag-spark-fly {
+  0% {
+    transform: translate(-50%, -50%) rotate(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(
+      calc(-50% + cos(var(--angle)) * var(--dist)),
+      calc(-50% + sin(var(--angle)) * var(--dist) - 30px)
+    ) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Miss message */
+.ag-miss {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255,255,255,0.95);
+  padding: 16px 24px;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #c62828;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  z-index: 20;
+  animation: ag-miss-pop 0.3s ease-out;
+}
+
+@keyframes ag-miss-pop {
+  from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+  to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+/* Ground */
+.ag-ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 40px;
+  background: linear-gradient(180deg, #7ec850, #5aaa3a);
+  box-shadow: 0 -3px 0 rgba(255,255,255,0.2);
+}
+
+/* Result */
+.ag-result {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.ag-result-emoji {
+  font-size: 80px;
+  margin-bottom: 20px;
+}
+
+.ag-result-score {
+  font-size: 48px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 4px 8px rgba(0,0,0,0.4);
+  margin-bottom: 12px;
+}
+
+.ag-result-msg {
+  font-size: 20px;
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 30px;
+}
+
+.ag-result-btn {
+  padding: 14px 32px;
+  border-radius: 24px;
+  border: none;
+  background: linear-gradient(180deg, #ffe58a, #ffc02e);
+  color: #4a2a00;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #d99a00, 0 8px 16px rgba(0,0,0,0.2);
+}
+
+.ag-result-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #d99a00;
+}

@@ -11,6 +11,7 @@ import type { Word } from '../types';
 import type { AttemptRequest } from '../services/api';
 import SceneBackground from '../components/v2/SceneBackground';
 import BananaGame from '../components/v2/BananaGame';
+import AnimalGame from '../components/v2/AnimalGame';
 import { useBgm } from '../hooks/useBgm';
 import '../styles/v2-theme.css';
 
@@ -57,6 +58,12 @@ export default function HomePageV2() {
       return saved ? new Set(JSON.parse(saved)) : new Set();
     } catch { return new Set(); }
   });
+  const [bananaClearedDays, setBananaClearedDays] = useState<Set<number>>(() => {
+    try {
+      const saved = localStorage.getItem('voca-king-banana-cleared');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch { return new Set(); }
+  });
 
   const dayScrollRef = useRef<HTMLDivElement>(null);
   const levelScrollRef = useRef<HTMLDivElement>(null);
@@ -100,6 +107,7 @@ export default function HomePageV2() {
 
   // 현재 Day의 플래시카드 클리어 여부 (이번 세션에서 봤거나, 이전에 클리어했거나)
   const flashCleared = currentDay ? (seenCards.size >= currentDay.words.length || flashClearedDays.has(currentDay.id)) : false;
+  const bananaCleared = currentDay ? bananaClearedDays.has(currentDay.id) : false;
 
   // 모든 카드를 보면 클리어 상태 저장
   useEffect(() => {
@@ -109,6 +117,15 @@ export default function HomePageV2() {
       localStorage.setItem('voca-king-flash-cleared', JSON.stringify([...newSet]));
     }
   }, [seenCards.size, currentDay, flashClearedDays]);
+
+  // 바나나 게임 클리어 핸들러
+  const handleBananaFinish = useCallback((missed: Word[]) => {
+    if (currentDay && missed.length === 0) {
+      const newSet = new Set(bananaClearedDays).add(currentDay.id);
+      setBananaClearedDays(newSet);
+      localStorage.setItem('voca-king-banana-cleared', JSON.stringify([...newSet]));
+    }
+  }, [currentDay, bananaClearedDays]);
 
   const currentLevel = levels.find((l) => l.id === currentLevelId);
 
@@ -289,8 +306,10 @@ export default function HomePageV2() {
           <div className="v2-hub-grid">
             {GAME_STAGES.map((stage) => {
               const isLocked = (stage.id === 'match' && !flashCleared) ||
-                               (stage.id === 'pop') ||
+                               (stage.id === 'pop' && !bananaCleared) ||
                                (stage.id === 'listen');
+              const isCleared = (stage.id === 'flash' && flashCleared) ||
+                                (stage.id === 'match' && bananaCleared);
               return (
                 <button
                   key={stage.id}
@@ -299,10 +318,10 @@ export default function HomePageV2() {
                   disabled={isLocked}
                 >
                   {isLocked && <div className="lock-icon">🔒</div>}
+                  {isCleared && <div className="clear-badge">✓ 클리어</div>}
                   <div className="emoji">{stage.emoji}</div>
                   <div className="no">STAGE {stage.no}</div>
                   <div className="name">{stage.name}</div>
-                  {stage.id === 'flash' && flashCleared && <div className="clear-badge">✓ 클리어</div>}
                 </button>
               );
             })}
@@ -354,12 +373,21 @@ export default function HomePageV2() {
         <BananaGame
           words={currentDay.words}
           allWords={allWordsInLevel}
+          onFinish={handleBananaFinish}
+          onBack={() => setActiveGame(null)}
+        />
+      )}
+
+      {viewMode === 'selftest' && activeGame === 'pop' && currentDay && (
+        <AnimalGame
+          words={currentDay.words}
+          allWords={allWordsInLevel}
           onFinish={() => {}}
           onBack={() => setActiveGame(null)}
         />
       )}
 
-      {viewMode === 'selftest' && activeGame && activeGame !== 'flash' && activeGame !== 'match' && (
+      {viewMode === 'selftest' && activeGame && activeGame !== 'flash' && activeGame !== 'match' && activeGame !== 'pop' && (
         <div className="v2-game-wrap">
           <div className="v2-result">
             <div className="emoji">{GAME_STAGES.find(s => s.id === activeGame)?.emoji}</div>
