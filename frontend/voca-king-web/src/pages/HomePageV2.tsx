@@ -118,9 +118,9 @@ export default function HomePageV2() {
     }
   }, [seenCards.size, currentDay, flashClearedDays]);
 
-  // 바나나 게임 클리어 핸들러
-  const handleBananaFinish = useCallback((missed: Word[]) => {
-    if (currentDay && missed.length === 0) {
+  // 바나나 게임 클리어 핸들러 (게임 완료하면 클리어)
+  const handleBananaFinish = useCallback((_missed: Word[]) => {
+    if (currentDay && !bananaClearedDays.has(currentDay.id)) {
       const newSet = new Set(bananaClearedDays).add(currentDay.id);
       setBananaClearedDays(newSet);
       localStorage.setItem('voca-king-banana-cleared', JSON.stringify([...newSet]));
