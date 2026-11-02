@@ -183,8 +183,6 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack }:
     if (gameOver) {
       const score = scoreRef.current;
       const total = words.length;
-      // 디버깅: 점수 확인
-      alert(`게임 종료! 점수: ${score}/${total}, dayId: ${dayId}`);
       // 완벽 클리어 시 직접 localStorage에 저장
       if (score === total) {
         try {
@@ -193,7 +191,6 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack }:
           if (!clearedDays.includes(dayId)) {
             clearedDays.push(dayId);
             localStorage.setItem('voca-king-banana-cleared', JSON.stringify(clearedDays));
-            alert('클리어 저장 완료!');
           }
         } catch (e) {
           console.error('Failed to save banana clear state', e);
