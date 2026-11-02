@@ -99,6 +99,7 @@ export default function BananaGame({ words, allWords, onFinish, onBack }: Props)
   const timerRef = useRef<number | null>(null);
   const monkeyRef = useRef<HTMLDivElement>(null);
   const bananaRefs = useRef<(HTMLButtonElement | null)[]>([null, null]);
+  const scoreRef = useRef(0);
 
   // 카운트다운
   useEffect(() => {
@@ -179,9 +180,9 @@ export default function BananaGame({ words, allWords, onFinish, onBack }: Props)
 
   useEffect(() => {
     if (gameOver) {
-      onFinish(banana, words.length);
+      onFinish(scoreRef.current, words.length);
     }
-  }, [gameOver, banana, words.length, onFinish]);
+  }, [gameOver, words.length, onFinish]);
 
   // 선택 처리
   const handlePick = (idx: number) => {
@@ -223,6 +224,7 @@ export default function BananaGame({ words, allWords, onFinish, onBack }: Props)
         isLastWord = clean.size + 1 >= words.length;
         setClean(prev => new Set(prev).add(current.id));
         setCombo(prev => prev + 1);
+        scoreRef.current += 1;
         setBanana(prev => prev + 1);
       }
 
