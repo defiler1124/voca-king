@@ -10,6 +10,7 @@ import './AnimalGame.css';
 interface Props {
   words: Word[];
   allWords: Word[];
+  dayId: number;
   onFinish: (score: number, total: number) => void;
   onBack: () => void;
 }
@@ -197,7 +198,7 @@ interface FallingAnimal {
   status: 'falling' | 'correct' | 'wrong' | 'away';
 }
 
-export default function AnimalGame({ words, allWords, onFinish, onBack }: Props) {
+export default function AnimalGame({ words, allWords, dayId, onFinish, onBack }: Props) {
   const [queue, setQueue] = useState<Word[]>([]);
   const [current, setCurrent] = useState<Word | null>(null);
   const [clean, setClean] = useState<Set<number>>(new Set());
@@ -316,9 +317,24 @@ export default function AnimalGame({ words, allWords, onFinish, onBack }: Props)
 
   useEffect(() => {
     if (gameOver) {
-      onFinish(clean.size, words.length);
+      const score = clean.size;
+      const total = words.length;
+      // 완벽 클리어 시 직접 localStorage에 저장
+      if (score === total) {
+        try {
+          const saved = localStorage.getItem('voca-king-animal-cleared');
+          const clearedDays: number[] = saved ? JSON.parse(saved) : [];
+          if (!clearedDays.includes(dayId)) {
+            clearedDays.push(dayId);
+            localStorage.setItem('voca-king-animal-cleared', JSON.stringify(clearedDays));
+          }
+        } catch (e) {
+          console.error('Failed to save animal clear state', e);
+        }
+      }
+      onFinish(score, total);
     }
-  }, [gameOver, clean.size, words.length, onFinish]);
+  }, [gameOver, clean.size, words.length, dayId, onFinish]);
 
   const handleMiss = (word: Word) => {
     if (gameOver || locked) return;

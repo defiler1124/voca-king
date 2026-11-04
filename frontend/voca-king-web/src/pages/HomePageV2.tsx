@@ -12,6 +12,7 @@ import type { AttemptRequest } from '../services/api';
 import SceneBackground from '../components/v2/SceneBackground';
 import BananaGame from '../components/v2/BananaGame';
 import AnimalGame from '../components/v2/AnimalGame';
+import ListenGame from '../components/v2/ListenGame';
 import { useBgm } from '../hooks/useBgm';
 import '../styles/v2-theme.css';
 
@@ -64,6 +65,12 @@ export default function HomePageV2() {
       return saved ? new Set(JSON.parse(saved)) : new Set();
     } catch { return new Set(); }
   });
+  const [animalClearedDays, setAnimalClearedDays] = useState<Set<number>>(() => {
+    try {
+      const saved = localStorage.getItem('voca-king-animal-cleared');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch { return new Set(); }
+  });
 
   const dayScrollRef = useRef<HTMLDivElement>(null);
   const levelScrollRef = useRef<HTMLDivElement>(null);
@@ -109,17 +116,18 @@ export default function HomePageV2() {
   useEffect(() => {
     if (activeGame === null) {
       try {
-        const saved = localStorage.getItem('voca-king-banana-cleared');
-        if (saved) {
-          setBananaClearedDays(new Set(JSON.parse(saved)));
-        }
+        const savedBanana = localStorage.getItem('voca-king-banana-cleared');
+        if (savedBanana) setBananaClearedDays(new Set(JSON.parse(savedBanana)));
+        const savedAnimal = localStorage.getItem('voca-king-animal-cleared');
+        if (savedAnimal) setAnimalClearedDays(new Set(JSON.parse(savedAnimal)));
       } catch { /* ignore */ }
     }
   }, [activeGame]);
 
-  // 현재 Day의 플래시카드 클리어 여부 (이번 세션에서 봤거나, 이전에 클리어했거나)
+  // 현재 Day의 클리어 여부
   const flashCleared = currentDay ? (seenCards.size >= currentDay.words.length || flashClearedDays.has(currentDay.id)) : false;
   const bananaCleared = currentDay ? bananaClearedDays.has(currentDay.id) : false;
+  const animalCleared = currentDay ? animalClearedDays.has(currentDay.id) : false;
 
   // 모든 카드를 보면 클리어 상태 저장
   useEffect(() => {
@@ -137,6 +145,14 @@ export default function HomePageV2() {
       setBananaClearedDays(prev => new Set(prev).add(currentDay.id));
     }
   }, [currentDay, bananaClearedDays]);
+
+  // 동물 게임 클리어 핸들러 (완벽 클리어: score === total)
+  const handleAnimalFinish = useCallback((score: number, total: number) => {
+    // AnimalGame에서 직접 localStorage에 저장하므로, 여기서는 state만 동기화
+    if (currentDay && score === total && !animalClearedDays.has(currentDay.id)) {
+      setAnimalClearedDays(prev => new Set(prev).add(currentDay.id));
+    }
+  }, [currentDay, animalClearedDays]);
 
   const currentLevel = levels.find((l) => l.id === currentLevelId);
 
@@ -318,9 +334,10 @@ export default function HomePageV2() {
             {GAME_STAGES.map((stage) => {
               const isLocked = (stage.id === 'match' && !flashCleared) ||
                                (stage.id === 'pop' && !bananaCleared) ||
-                               (stage.id === 'listen');
+                               (stage.id === 'listen' && !animalCleared);
               const isCleared = (stage.id === 'flash' && flashCleared) ||
-                                (stage.id === 'match' && bananaCleared);
+                                (stage.id === 'match' && bananaCleared) ||
+                                (stage.id === 'pop' && animalCleared);
               return (
                 <button
                   key={stage.id}
@@ -394,12 +411,23 @@ export default function HomePageV2() {
         <AnimalGame
           words={currentDay.words}
           allWords={allWordsInLevel}
+          dayId={currentDay.id}
+          onFinish={handleAnimalFinish}
+          onBack={() => setActiveGame(null)}
+        />
+      )}
+
+      {viewMode === 'selftest' && activeGame === 'listen' && currentDay && (
+        <ListenGame
+          words={currentDay.words}
+          allWords={allWordsInLevel}
+          dayId={currentDay.id}
           onFinish={(_score, _total) => {}}
           onBack={() => setActiveGame(null)}
         />
       )}
 
-      {viewMode === 'selftest' && activeGame && activeGame !== 'flash' && activeGame !== 'match' && activeGame !== 'pop' && (
+      {viewMode === 'selftest' && activeGame && activeGame !== 'flash' && activeGame !== 'match' && activeGame !== 'pop' && activeGame !== 'listen' && (
         <div className="v2-game-wrap">
           <div className="v2-result">
             <div className="emoji">{GAME_STAGES.find(s => s.id === activeGame)?.emoji}</div>
