@@ -262,21 +262,26 @@ export default function ListenGame({ words, allWords, dayId, onFinish, onBack }:
   const currentQ = questions[currentIdx];
   const fusePercent = (timeLeft / GAME_TIME) * 100;
   const labels = ['A', 'B', 'C', 'D'];
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+  const timeDisplay = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
   return (
     <div className="ls-game">
       {/* Header */}
       <div className="ls-header">
-        <button className="ls-back-btn" onClick={onBack}>← 목록으로</button>
+        <button className="ls-back-btn" onClick={onBack}>← 목록</button>
         <div className="ls-title">🎧 듣고 고르기</div>
         <div className="ls-progress-text">{done.size} / {words.length}</div>
       </div>
 
       {/* Timer */}
       <div className="ls-timer-area">
-        <div className="ls-timer-display">{timeLeft}</div>
+        <div className="ls-timer-display">{timeDisplay}</div>
         <div className="ls-fuse-bar">
           <div className="ls-fuse-fill" style={{ width: `${fusePercent}%` }} />
+          <div className="ls-fuse-fire" style={{ left: `calc(${fusePercent}% + 2px)` }}>🔥</div>
+          <div className="ls-fuse-bomb">💣</div>
         </div>
       </div>
 
