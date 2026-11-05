@@ -657,8 +657,14 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: radial-gradient(circle at 20% 12%, rgba(130,120,255,.55) 0, transparent 45%), radial-gradient(circle at 85% 80%, rgba(255,140,200,.28) 0, transparent 45%), linear-gradient(170deg, #2b2f6b, #15193d);
+  align-items: center;
+  background: transparent;
   padding: 16px;
+}
+
+.v2-game-wrap > * {
+  width: 100%;
+  max-width: 900px;
 }
 
 /* ── Flash Card Fullscreen ── */
