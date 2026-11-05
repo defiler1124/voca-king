@@ -454,7 +454,13 @@ export default function HomePageV2() {
                       const isCorrect = shuffledQuizWords[quizIndex]?.korean === choice;
                       let className = 'v2-quiz-choice';
                       if (quizAnswered) { if (isCorrect) className += ' correct'; else if (selectedAnswer === choice) className += ' wrong'; }
-                      return <button key={idx} className={className} onClick={() => selectQuizAnswer(choice)} disabled={quizAnswered}>{choice}</button>;
+                      const labels = ['A', 'B', 'C', 'D'];
+                      return (
+                        <button key={idx} className={className} onClick={() => selectQuizAnswer(choice)} disabled={quizAnswered}>
+                          <span className="v2-quiz-choice-label">{labels[idx]}</span>
+                          <span className="v2-quiz-choice-text">{choice}</span>
+                        </button>
+                      );
                     })}
                   </div>
                 </>
