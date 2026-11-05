@@ -16,6 +16,52 @@ import ListenGame from '../components/v2/ListenGame';
 import { useBgm } from '../hooks/useBgm';
 import '../styles/v2-theme.css';
 
+// Audio context for quiz sound effects
+let quizAudioCtx: AudioContext | null = null;
+function getQuizAudioCtx() {
+  if (!quizAudioCtx) {
+    const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (AC) quizAudioCtx = new AC();
+  }
+  if (quizAudioCtx?.state === 'suspended') quizAudioCtx.resume();
+  return quizAudioCtx;
+}
+
+function playCorrectSound() {
+  const ctx = getQuizAudioCtx();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  [523, 659, 784].forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.15, now + i * 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.08 + 0.2);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now + i * 0.08);
+    osc.stop(now + i * 0.08 + 0.25);
+  });
+}
+
+function playWrongSound() {
+  const ctx = getQuizAudioCtx();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(200, now);
+  osc.frequency.exponentialRampToValueAtTime(100, now + 0.3);
+  gain.gain.setValueAtTime(0.12, now);
+  gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(now);
+  osc.stop(now + 0.35);
+}
+
 type ViewMode = 'cards' | 'selftest' | 'final';
 type GameType = 'flash' | 'match' | 'pop' | 'listen' | null;
 
@@ -201,6 +247,8 @@ export default function HomePageV2() {
     const currentWord = shuffledQuizWords[quizIndex];
     const isCorrect = answer === currentWord.korean;
     setSelectedAnswer(answer); setQuizAnswered(true);
+    // Play sound effect
+    if (isCorrect) playCorrectSound(); else playWrongSound();
     const newScore = isCorrect ? quizScore + 1 : quizScore;
     if (isCorrect) setQuizScore(newScore);
     const attempt: AttemptRequest = { wordId: currentWord.id, attemptType: 'QUIZ', correct: isCorrect, selectedAnswer: isCorrect ? undefined : answer };
