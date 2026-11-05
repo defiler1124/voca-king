@@ -19,10 +19,41 @@
 
 ## 배포
 
-- **프론트엔드**: Vercel (`voca-king-web` 프로젝트)
-  - Root Directory: `frontend/voca-king-web`
-  - GitHub 연결 필요 (Settings → Git)
-- **백엔드**: Railway (`voca-king-api`)
+### 프론트엔드 (Vercel)
+- **프로젝트**: `voca-king-web`
+- **URL**: https://voca-king-web.vercel.app
+- **Root Directory**: `frontend/voca-king-web`
+- GitHub 연결 필요 (Settings → Git)
+- push하면 자동 배포
+
+### 백엔드 (Railway)
+- **⚠️ 중요: Railway 프로젝트명은 `celebrated-truth`** (voca-king 아님!)
+- **API URL**: https://voca-king-api-production.up.railway.app
+- **서비스 구성**:
+  - `voca-king-api` - Spring Boot 백엔드
+  - `MySQL` - 데이터베이스
+  - `mysql-volume` - DB 볼륨
+- **빌드 설정**: Dockerfile 사용 (`backend/voca-king-api/Dockerfile`)
+- GitHub 연결되어 있음 - push하면 자동 배포
+
+### Railway 환경변수 (celebrated-truth → voca-king-api)
+```
+SPRING_PROFILES_ACTIVE=prod
+SPRING_DATASOURCE_URL=jdbc:mysql://...
+SPRING_DATASOURCE_USERNAME=...
+SPRING_DATASOURCE_PASSWORD=...
+JWT_SECRET=...
+AZURE_SPEECH_KEY=...
+AZURE_SPEECH_REGION=eastus
+AZURE_TTS_ENABLED=true
+```
+
+### Azure Speech Service
+- **리소스명**: `vocaking-speech`
+- **지역**: eastus
+- **가격 계층**: F0 (무료)
+- **TTS 음성**: `en-US-AriaNeural`
+- Azure Portal에서 키 확인: Speech Services → vocaking-speech → 키 및 엔드포인트
 
 ## 주요 파일
 
