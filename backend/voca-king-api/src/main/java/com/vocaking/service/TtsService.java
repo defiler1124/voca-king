@@ -67,7 +67,7 @@ public class TtsService {
             // SSML 형식으로 요청
             String ssml = String.format("""
                 <speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='en-US'>
-                    <voice name='en-US-AriaNeural'>
+                    <voice name='en-US-JennyNeural'>
                         <prosody rate='-10%%'>%s</prosody>
                     </voice>
                 </speak>
