@@ -83,7 +83,6 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
   const [banana, setBanana] = useState(0);
   const [combo, setCombo] = useState(0);
   const [locked, setLocked] = useState(true);
-  const [dirty, setDirty] = useState(false);
   const [options, setOptions] = useState<[string, string]>(['', '']);
   const [correctIdx, setCorrectIdx] = useState(0);
   const [mood, setMood] = useState<MonkeyMood>('idle');
@@ -157,7 +156,6 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
     const word = q.shift()!;
     setQueue(q);
     setCurrent(word);
-    setDirty(false);
     setLocked(false);
     setPickedIdx(null);
     setIsCorrect(null);
@@ -228,24 +226,16 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
     }
 
     if (ok) {
+      // 정답
       playCorrectSound();
       setMood('eat');
       setTimeout(() => setMood('happy'), 500);
 
-      let isLastWord = false;
-      if (dirty) {
-        setCombo(0);
-        if (!missed.some(m => m.id === current.id)) {
-          setMissed(prev => [...prev, current]);
-        }
-      } else {
-        // 마지막 단어인지 체크 (clean.size + 1 >= words.length)
-        isLastWord = clean.size + 1 >= words.length;
-        setClean(prev => new Set(prev).add(current.id));
-        setCombo(prev => prev + 1);
-        scoreRef.current += 1;
-        setBanana(prev => prev + 1);
-      }
+      const isLastWord = clean.size + 1 >= words.length;
+      setClean(prev => new Set(prev).add(current.id));
+      setCombo(prev => prev + 1);
+      scoreRef.current += 1;
+      setBanana(prev => prev + 1);
 
       setTimeout(() => {
         setMood('idle');
@@ -259,16 +249,30 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
         }
       }, 900);
     } else {
+      // 오답: missed에 추가하고 다음 문제로
       playWrongSound();
       setSlapDir(idx === 0 ? 'l' : 'r');
       setMood('angry');
-      setDirty(true);
       setCombo(0);
+
+      if (!missed.some(m => m.id === current.id)) {
+        setMissed(prev => [...prev, current]);
+      }
+      setClean(prev => new Set(prev).add(current.id)); // 완료 처리
+
+      const isLastWord = clean.size + 1 >= words.length;
 
       setTimeout(() => {
         setMood('idle');
         setSlapDir(null);
-        setLocked(false);
+        if (isLastWord) {
+          if (timerRef.current) clearInterval(timerRef.current);
+          setStageClear(true);
+          setClearTime(GAME_TIME - timeLeft);
+          setGameOver(true);
+        } else {
+          nextQuestion();
+        }
       }, 800);
     }
   };

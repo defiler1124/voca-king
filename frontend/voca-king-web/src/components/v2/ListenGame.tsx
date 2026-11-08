@@ -96,11 +96,9 @@ function playWrongSound() {
 }
 
 export default function ListenGame({ words, allWords, dayId, onFinish, onBack, onFinalTest }: Props) {
-  const [round, setRound] = useState(1);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [rightCount, setRightCount] = useState(0);
-  const [wrongWords, setWrongWords] = useState<Word[]>([]);
   const [allMissed, setAllMissed] = useState<Word[]>([]);
   const [done, setDone] = useState<Set<number>>(new Set());
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
@@ -112,7 +110,6 @@ export default function ListenGame({ words, allWords, dayId, onFinish, onBack, o
   const [showReady, setShowReady] = useState(true);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [gameStarted, setGameStarted] = useState(false);
-  const [showRetry, setShowRetry] = useState(false);
 
   const timerRef = useRef<number | null>(null);
   const scoreRef = useRef(0);
@@ -156,8 +153,6 @@ export default function ListenGame({ words, allWords, dayId, onFinish, onBack, o
     setQuestions(qs);
     setCurrentIdx(0);
     setRightCount(0);
-    setWrongWords([]);
-    setRound(1);
 
     timerRef.current = window.setInterval(() => {
       setTimeLeft(prev => {
@@ -223,11 +218,10 @@ export default function ListenGame({ words, allWords, dayId, onFinish, onBack, o
     if (isCorrect) {
       playCorrectSound();
       setRightCount(prev => prev + 1);
-      setDone(prev => new Set(prev).add(q.word.id));
       scoreRef.current += 1;
     } else {
       playWrongSound();
-      setWrongWords(prev => [...prev, q.word]);
+      // 오답: missed에 추가
       if (!allMissed.some(w => w.id === q.word.id)) {
         setAllMissed(prev => [...prev, q.word]);
       }
@@ -235,6 +229,8 @@ export default function ListenGame({ words, allWords, dayId, onFinish, onBack, o
       setTimeLeft(prev => Math.max(0, prev - 3));
     }
 
+    // 완료 처리 (정답/오답 무관하게)
+    setDone(prev => new Set(prev).add(q.word.id));
     setShowResult(true);
 
     // Next question after delay
@@ -243,48 +239,18 @@ export default function ListenGame({ words, allWords, dayId, onFinish, onBack, o
       setShowResult(false);
 
       if (currentIdx < questions.length - 1) {
+        // 다음 문제로
         const nextIdx = currentIdx + 1;
         setCurrentIdx(nextIdx);
-        // Speak next word
         setTimeout(() => {
           if (questions[nextIdx]) speak(questions[nextIdx].word.english);
         }, 200);
       } else {
-        // Round finished
-        if (wrongWords.length > 0 || (idx !== q.correctIdx)) {
-          // Has wrong answers - start new round
-          const newWrongWords = idx !== q.correctIdx
-            ? [...wrongWords, q.word]
-            : wrongWords;
-
-          if (newWrongWords.length > 0) {
-            setShowRetry(true);
-            setTimeout(() => {
-              setShowRetry(false);
-              setRound(prev => prev + 1);
-              const newQs = buildQuestions(newWrongWords);
-              setQuestions(newQs);
-              setCurrentIdx(0);
-              setWrongWords([]);
-              // Speak first word of new round
-              setTimeout(() => {
-                if (newQs[0]) speak(newQs[0].word.english);
-              }, 200);
-            }, 1500);
-          } else {
-            // All correct
-            if (timerRef.current) clearInterval(timerRef.current);
-            setStageClear(true);
-            setClearTime(GAME_TIME - timeLeft);
-            setGameOver(true);
-          }
-        } else {
-          // All correct this round
-          if (timerRef.current) clearInterval(timerRef.current);
-          setStageClear(true);
-          setClearTime(GAME_TIME - timeLeft);
-          setGameOver(true);
-        }
+        // 모든 문제 완료 - 게임 종료
+        if (timerRef.current) clearInterval(timerRef.current);
+        setStageClear(true);
+        setClearTime(GAME_TIME - timeLeft);
+        setGameOver(true);
       }
     }, isCorrect ? 700 : 1300);
   };
@@ -384,21 +350,11 @@ export default function ListenGame({ words, allWords, dayId, onFinish, onBack, o
         )
       )}
 
-      {/* Retry message */}
-      {showRetry && (
-        <div className="ls-retry">
-          <div className="ls-retry-emoji">🔁</div>
-          <div className="ls-retry-title">틀린 {wrongWords.length + (selectedIdx !== null && selectedIdx !== currentQ?.correctIdx ? 1 : 0)}개를 다시 풀어봐요!</div>
-          <div className="ls-retry-sub">모두 맞힐 때까지 계속돼요</div>
-        </div>
-      )}
-
       {/* Game Scene */}
-      {gameStarted && !gameOver && countdown === null && !showRetry && currentQ && (
+      {gameStarted && !gameOver && countdown === null && currentQ && (
         <div className="ls-scene">
           {/* Counter */}
           <div className="ls-counter">
-            {round > 1 && <span className="ls-round">🔁 {round}라운드 · 틀린 문제 다시! · </span>}
             {currentIdx + 1} / {questions.length} · 맞은 개수 {rightCount}
           </div>
 

@@ -204,7 +204,6 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
   const [current, setCurrent] = useState<Word | null>(null);
   const [clean, setClean] = useState<Set<number>>(new Set());
   const [missed, setMissed] = useState<Word[]>([]);
-  const [dirty, setDirty] = useState(false);
   const [locked, setLocked] = useState(false);
   const [animals, setAnimals] = useState<FallingAnimal[]>([]);
   const [timeLeft, setTimeLeft] = useState(GAME_TIME);
@@ -278,7 +277,6 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
     const word = q.shift()!;
     setQueue(q);
     setCurrent(word);
-    setDirty(false);
     setLocked(false);
     setShowMiss(false);
     setBurst(null);
@@ -406,26 +404,19 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
         }
       }
 
-      if (dirty) {
-        // Already wrong once, add to missed
-        if (!missed.some(m => m.id === current.id)) {
-          setMissed(prev => [...prev, current]);
-        }
-      } else {
-        // Clean answer
-        const isLastWord = clean.size + 1 >= words.length;
-        setClean(prev => new Set(prev).add(current.id));
+      // 정답 처리
+      const isLastWord = clean.size + 1 >= words.length;
+      setClean(prev => new Set(prev).add(current.id));
 
-        if (isLastWord) {
-          setTimeout(() => {
-            playPopSound();
-            if (timerRef.current) clearInterval(timerRef.current);
-            setStageClear(true);
-            setClearTime(GAME_TIME - timeLeft);
-            setGameOver(true);
-          }, 500);
-          return;
-        }
+      if (isLastWord) {
+        setTimeout(() => {
+          playPopSound();
+          if (timerRef.current) clearInterval(timerRef.current);
+          setStageClear(true);
+          setClearTime(GAME_TIME - timeLeft);
+          setGameOver(true);
+        }, 500);
+        return;
       }
 
       setTimeout(() => {
@@ -438,8 +429,12 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
       }, 1000);
 
     } else {
-      // Wrong answer
-      setDirty(true);
+      // 오답 처리: missed에 추가하고 다음 문제로
+      if (!missed.some(m => m.id === current.id)) {
+        setMissed(prev => [...prev, current]);
+      }
+      setClean(prev => new Set(prev).add(current.id)); // 완료 처리 (다시 안나오게)
+
       playAngrySound();
 
       setAnimals(prev => prev.map((a, i) =>
@@ -448,6 +443,24 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
 
       // Penalty
       setTimeLeft(prev => Math.max(0, prev - 3));
+
+      // 마지막 단어인지 확인
+      const isLastWord = clean.size + 1 >= words.length;
+      if (isLastWord) {
+        setTimeout(() => {
+          if (timerRef.current) clearInterval(timerRef.current);
+          setStageClear(true);
+          setClearTime(GAME_TIME - timeLeft);
+          setGameOver(true);
+        }, 1000);
+        return;
+      }
+
+      // 다음 문제로 이동
+      setTimeout(() => {
+        setCurrent(null);
+        nextQuestion();
+      }, 1000);
     }
   };
 
