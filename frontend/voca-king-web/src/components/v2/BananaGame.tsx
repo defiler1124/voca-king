@@ -285,6 +285,13 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
+  // Star rating: 3 stars = no missed, 2 stars = 1-2 missed, 1 star = 3+ missed
+  const getStars = () => {
+    if (missed.length === 0) return '★★★';
+    if (missed.length <= 2) return '★★☆';
+    return '★☆☆';
+  };
+
   const fusePercent = (timeLeft / GAME_TIME) * 100;
 
   // 카운트다운 화면
@@ -333,8 +340,18 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
           <div className="bn-clear">
             <div className="bn-clear-crown">👑</div>
             <div className="bn-clear-title">STAGE CLEAR!</div>
-            <div className="bn-clear-stars">★★★</div>
+            <div className="bn-clear-stars">{getStars()}</div>
             <div className="bn-clear-time">{formatTime(clearTime)} 만에 클리어 (제한 {formatTime(GAME_TIME)})</div>
+            {missed.length > 0 && (
+              <div className="bn-clear-missed">
+                <div className="bn-clear-missed-title">다시 볼 단어</div>
+                <div className="bn-clear-missed-list">
+                  {missed.map((w, i) => (
+                    <span key={w.id}>{w.english} - {w.korean}{i < missed.length - 1 ? ', ' : ''}</span>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="bn-clear-btns">
               <button className="bn-clear-btn secondary" onClick={() => window.location.reload()}>다시 하기</button>
               <button className="bn-clear-btn primary" onClick={onNextStage || onBack}>다음 스테이지 ▶</button>

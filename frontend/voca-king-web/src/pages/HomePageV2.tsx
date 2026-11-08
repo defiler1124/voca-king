@@ -487,6 +487,7 @@ export default function HomePageV2() {
           dayId={currentDay.id}
           onFinish={handleAnimalFinish}
           onBack={() => setActiveGame(null)}
+          onNextStage={() => setActiveGame('listen')}
         />
       )}
 

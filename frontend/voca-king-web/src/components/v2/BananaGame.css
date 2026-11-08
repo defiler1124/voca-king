@@ -503,7 +503,29 @@
 .bn-clear-time {
   font-size: 16px;
   color: rgba(255,255,255,0.9);
-  margin-bottom: 36px;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.bn-clear-missed {
+  background: rgba(255,255,255,0.95);
+  border-radius: 12px;
+  padding: 12px 20px;
+  margin-bottom: 20px;
+  max-width: 320px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.bn-clear-missed-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #5a3a00;
+  margin-bottom: 6px;
+}
+
+.bn-clear-missed-list {
+  font-size: 14px;
+  color: #7a5a2a;
   line-height: 1.5;
 }
 

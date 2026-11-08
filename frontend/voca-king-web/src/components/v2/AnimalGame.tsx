@@ -13,6 +13,7 @@ interface Props {
   dayId: number;
   onFinish: (score: number, total: number) => void;
   onBack: () => void;
+  onNextStage?: () => void;
 }
 
 const GAME_TIME = 60;
@@ -198,7 +199,7 @@ interface FallingAnimal {
   status: 'falling' | 'correct' | 'wrong' | 'away';
 }
 
-export default function AnimalGame({ words, allWords, dayId, onFinish, onBack }: Props) {
+export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, onNextStage }: Props) {
   const [queue, setQueue] = useState<Word[]>([]);
   const [current, setCurrent] = useState<Word | null>(null);
   const [clean, setClean] = useState<Set<number>>(new Set());
@@ -208,6 +209,8 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack }:
   const [animals, setAnimals] = useState<FallingAnimal[]>([]);
   const [timeLeft, setTimeLeft] = useState(GAME_TIME);
   const [gameOver, setGameOver] = useState(false);
+  const [stageClear, setStageClear] = useState(false);
+  const [clearTime, setClearTime] = useState(0);
   const [countdown, setCountdown] = useState<number | null>(3);
   const [gameStarted, setGameStarted] = useState(false);
   const [showMiss, setShowMiss] = useState(false);
@@ -417,6 +420,8 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack }:
           setTimeout(() => {
             playPopSound();
             if (timerRef.current) clearInterval(timerRef.current);
+            setStageClear(true);
+            setClearTime(GAME_TIME - timeLeft);
             setGameOver(true);
           }, 500);
           return;
@@ -448,6 +453,19 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack }:
 
   const fusePercent = (timeLeft / GAME_TIME) * 100;
 
+  const formatTime = (sec: number) => {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
+
+  // Star rating: 3 stars = no missed, 2 stars = 1-2 missed, 1 star = 3+ missed
+  const getStars = () => {
+    if (missed.length === 0) return '★★★';
+    if (missed.length <= 2) return '★★☆';
+    return '★☆☆';
+  };
+
   return (
     <div className="ag-game">
       {/* Header */}
@@ -474,16 +492,52 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack }:
 
       {/* Game Over */}
       {gameOver && (
-        <div className="ag-result">
-          <div className="ag-result-emoji">
-            {clean.size === words.length ? '👑' : clean.size >= words.length * 0.8 ? '🎉' : '🐻'}
+        <>
+          {/* Timer frozen at top */}
+          <div className="ag-timer-area">
+            <div className="ag-timer-display">{formatTime(timeLeft)}</div>
+            <div className="ag-fuse-bar">
+              <div className="ag-fuse-fill" style={{ width: `${fusePercent}%` }} />
+              <div className="ag-fuse-fire" style={{ left: `${fusePercent}%` }}>🔥</div>
+              <div className="ag-fuse-bomb">💣</div>
+            </div>
           </div>
-          <div className="ag-result-score">{clean.size} / {words.length}</div>
-          <div className="ag-result-msg">
-            {clean.size === words.length ? '완벽해요!' : clean.size >= words.length * 0.8 ? '잘했어요!' : '다시 도전해요!'}
-          </div>
-          <button className="ag-result-btn" onClick={onBack}>목록으로</button>
-        </div>
+
+          {stageClear ? (
+            <div className="ag-clear">
+              <div className="ag-clear-crown">👑</div>
+              <div className="ag-clear-title">STAGE CLEAR!</div>
+              <div className="ag-clear-stars">{getStars()}</div>
+              <div className="ag-clear-time">{formatTime(clearTime)} 만에 클리어 (제한 {formatTime(GAME_TIME)})</div>
+              {missed.length > 0 && (
+                <div className="ag-clear-missed">
+                  <div className="ag-clear-missed-title">다시 볼 단어</div>
+                  <div className="ag-clear-missed-list">
+                    {missed.map((w, i) => (
+                      <span key={w.id}>{w.english} - {w.korean}{i < missed.length - 1 ? ', ' : ''}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="ag-clear-btns">
+                <button className="ag-clear-btn secondary" onClick={() => window.location.reload()}>다시 하기</button>
+                <button className="ag-clear-btn primary" onClick={onNextStage || onBack}>다음 스테이지 ▶</button>
+                <button className="ag-clear-btn secondary" onClick={onBack}>목록</button>
+              </div>
+            </div>
+          ) : (
+            <div className="ag-result">
+              <div className="ag-result-emoji">
+                {clean.size >= words.length * 0.8 ? '🎉' : '🐻'}
+              </div>
+              <div className="ag-result-score">{clean.size} / {words.length}</div>
+              <div className="ag-result-msg">
+                {clean.size >= words.length * 0.8 ? '잘했어요!' : '다시 도전해요!'}
+              </div>
+              <button className="ag-result-btn" onClick={onBack}>목록으로</button>
+            </div>
+          )}
+        </>
       )}
 
       {/* Game Scene */}
