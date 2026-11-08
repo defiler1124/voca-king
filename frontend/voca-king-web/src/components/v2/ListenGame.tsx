@@ -109,17 +109,20 @@ export default function ListenGame({ words, allWords, dayId, onFinish, onBack, o
   const [gameOver, setGameOver] = useState(false);
   const [stageClear, setStageClear] = useState(false);
   const [clearTime, setClearTime] = useState(0);
-  const [countdown, setCountdown] = useState<number | null>(3);
+  const [showReady, setShowReady] = useState(true);
+  const [countdown, setCountdown] = useState<number | null>(null);
   const [gameStarted, setGameStarted] = useState(false);
   const [showRetry, setShowRetry] = useState(false);
 
   const timerRef = useRef<number | null>(null);
   const scoreRef = useRef(0);
 
-  // 컴포넌트 마운트 시 오디오 언락 (사용자 제스처 컨텍스트 내에서)
-  useEffect(() => {
+  // Ready 버튼 클릭 시 오디오 언락 + 카운트다운 시작
+  const handleReady = () => {
     unlockAudio();
-  }, []);
+    setShowReady(false);
+    setCountdown(3);
+  };
 
   // Build questions from words
   const buildQuestions = useCallback((wordList: Word[]): Question[] => {
@@ -324,6 +327,16 @@ export default function ListenGame({ words, allWords, dayId, onFinish, onBack, o
           <div className="ls-fuse-bomb">💣</div>
         </div>
       </div>
+
+      {/* Ready Screen */}
+      {showReady && (
+        <div className="ls-ready">
+          <div className="ls-ready-emoji">🎧</div>
+          <div className="ls-ready-title">듣고 고르기</div>
+          <div className="ls-ready-desc">영어 발음을 듣고 알맞은 뜻을 선택하세요</div>
+          <button className="ls-ready-btn" onClick={handleReady}>시작하기</button>
+        </div>
+      )}
 
       {/* Countdown */}
       {countdown !== null && (
