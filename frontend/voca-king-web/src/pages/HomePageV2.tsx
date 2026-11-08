@@ -568,8 +568,13 @@ export default function HomePageV2() {
 
       {/* Footer */}
       <footer className="v2-footer">
-        <div className="brand">👑 Voca King by 플로우어학원</div>
-        <div className="legal">© 2026 플로우어학원. All Rights Reserved.</div>
+        <div className="v2-footer-deco left">🌻</div>
+        <div className="v2-footer-content">
+          <div className="brand">👑 Voca King by 플로우어학원</div>
+          <div className="copyright">© 2026 플로우어학원. All Rights Reserved.</div>
+          <div className="legal">본 앱의 모든 콘텐츠는 저작권법의 보호를 받습니다. 무단 복제·배포·상업적 이용 시 민·형사상 책임을 질 수 있습니다.</div>
+        </div>
+        <div className="v2-footer-deco right">🌳</div>
       </footer>
     </div>
   );
