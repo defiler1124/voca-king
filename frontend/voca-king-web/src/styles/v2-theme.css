@@ -668,9 +668,10 @@
 }
 
 .v2-footer .legal {
-  font-size: 0.52em;
+  font-size: 0.48em;
   color: #7a8a76;
   line-height: 1.4;
+  word-break: keep-all;
 }
 
 /* ── Game Screen ── */
