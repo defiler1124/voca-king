@@ -475,13 +475,15 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
         <div className="ag-progress-text">{clean.size} / {words.length}</div>
       </div>
 
-      {/* Timer */}
-      <div className="ag-timer-area">
-        <div className="ag-timer-display">{timeLeft}</div>
-        <div className="ag-fuse-bar">
-          <div className="ag-fuse-fill" style={{ width: `${fusePercent}%` }} />
+      {/* Timer - hide when gameOver */}
+      {!gameOver && (
+        <div className="ag-timer-area">
+          <div className="ag-timer-display">{timeLeft}</div>
+          <div className="ag-fuse-bar">
+            <div className="ag-fuse-fill" style={{ width: `${fusePercent}%` }} />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Countdown */}
       {countdown !== null && (
