@@ -45,6 +45,21 @@ function getAudioCtx() {
   return audioCtx;
 }
 
+// 모바일 오디오 언락 (컴포넌트 마운트 시 호출)
+function unlockAudio() {
+  // AudioContext 초기화
+  getAudioCtx();
+
+  // 무음 오디오 재생으로 HTML5 Audio 언락
+  const silentAudio = new Audio('data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAAYYoRwmHAAAAAAD/+1DEAAAGAAGn9AAAIgAANIAAAAQAAAGkAAAAIAAANIAAAARMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV');
+  silentAudio.play().catch(() => {});
+
+  // Web Speech API 초기화
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.getVoices();
+  }
+}
+
 function playCorrectSound() {
   const ctx = getAudioCtx();
   if (!ctx) return;
@@ -100,6 +115,11 @@ export default function ListenGame({ words, allWords, dayId, onFinish, onBack, o
 
   const timerRef = useRef<number | null>(null);
   const scoreRef = useRef(0);
+
+  // 컴포넌트 마운트 시 오디오 언락 (사용자 제스처 컨텍스트 내에서)
+  useEffect(() => {
+    unlockAudio();
+  }, []);
 
   // Build questions from words
   const buildQuestions = useCallback((wordList: Word[]): Question[] => {
