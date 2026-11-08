@@ -116,6 +116,58 @@
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
 }
 
+/* 시간 페널티/보너스 표시 */
+.bn-time-pen {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  font-weight: 900;
+  padding: 4px 12px;
+  border-radius: 8px;
+  animation: bn-pen-pop 1s ease-out forwards;
+  z-index: 10;
+}
+
+.bn-time-pen.bad {
+  color: #ff3333;
+  background: rgba(255,0,0,0.2);
+  text-shadow: 0 0 10px rgba(255,0,0,0.5);
+}
+
+.bn-time-pen.good {
+  color: #33ff33;
+  background: rgba(0,255,0,0.2);
+  text-shadow: 0 0 10px rgba(0,255,0,0.5);
+}
+
+@keyframes bn-pen-pop {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+  20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+  80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -80%) scale(0.8); opacity: 0; }
+}
+
+/* 콤보 표시 */
+.bn-combo {
+  position: absolute;
+  top: 110px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+  font-weight: 900;
+  color: #ff6600;
+  text-shadow: 0 0 10px rgba(255,102,0,0.8), 0 2px 4px rgba(0,0,0,0.5);
+  animation: bn-combo-pulse 0.5s ease-in-out infinite alternate;
+  z-index: 10;
+}
+
+@keyframes bn-combo-pulse {
+  from { transform: translateX(-50%) scale(1); }
+  to { transform: translateX(-50%) scale(1.1); }
+}
+
 /* 바나나 점수 */
 .bn-score-row {
   padding: 8px 16px;

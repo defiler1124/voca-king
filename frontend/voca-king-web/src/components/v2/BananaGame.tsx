@@ -95,6 +95,7 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
   const [stageClear, setStageClear] = useState(false);
   const [clearTime, setClearTime] = useState(0);
   const [throwStyle, setThrowStyle] = useState<React.CSSProperties>({});
+  const [timePen, setTimePen] = useState<{ text: string; type: 'good' | 'bad' } | null>(null);
   const [countdown, setCountdown] = useState<number | null>(3);
   const [gameStarted, setGameStarted] = useState(false);
 
@@ -233,9 +234,17 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
 
       const isLastWord = clean.size + 1 >= words.length;
       setClean(prev => new Set(prev).add(current.id));
-      setCombo(prev => prev + 1);
+      const newCombo = combo + 1;
+      setCombo(newCombo);
       scoreRef.current += 1;
       setBanana(prev => prev + 1);
+
+      // 5연속 정답 보너스: +3초
+      if (newCombo > 0 && newCombo % 5 === 0) {
+        setTimeLeft(prev => prev + 3);
+        setTimePen({ text: '+3초!', type: 'good' });
+        setTimeout(() => setTimePen(null), 1000);
+      }
 
       setTimeout(() => {
         setMood('idle');
@@ -254,6 +263,11 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
       setSlapDir(idx === 0 ? 'l' : 'r');
       setMood('angry');
       setCombo(0);
+
+      // 오답 페널티: -2초
+      setTimeLeft(prev => Math.max(0, prev - 2));
+      setTimePen({ text: '-2초!', type: 'bad' });
+      setTimeout(() => setTimePen(null), 1000);
 
       if (!missed.some(m => m.id === current.id)) {
         setMissed(prev => [...prev, current]);
@@ -333,12 +347,18 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
         </div>
         <div className="bn-timer-area">
           <div className="bn-timer-display">{formatTime(timeLeft)}</div>
+          {timePen && <div className={`bn-time-pen ${timePen.type}`}>{timePen.text}</div>}
           <div className="bn-fuse-bar">
             <div className="bn-fuse-fill" style={{ width: `${fusePercent}%` }} />
             <div className="bn-fuse-fire" style={{ left: `${fusePercent}%` }}>🔥</div>
             <div className="bn-fuse-bomb">💣</div>
           </div>
         </div>
+
+        {/* 콤보 표시 */}
+        {combo >= 2 && !gameOver && (
+          <div className="bn-combo">🔥 {combo}연속!</div>
+        )}
 
         {stageClear ? (
           <div className="bn-clear">

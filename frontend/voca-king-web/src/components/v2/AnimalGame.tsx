@@ -211,6 +211,8 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
   const [stageClear, setStageClear] = useState(false);
   const [clearTime, setClearTime] = useState(0);
   const [countdown, setCountdown] = useState<number | null>(3);
+  const [combo, setCombo] = useState(0);
+  const [timePen, setTimePen] = useState<{ text: string; type: 'good' | 'bad' } | null>(null);
   const [gameStarted, setGameStarted] = useState(false);
   const [showMiss, setShowMiss] = useState(false);
   const [burst, setBurst] = useState<{ x: number; y: number } | null>(null);
@@ -407,6 +409,15 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
       // 정답 처리
       const isLastWord = clean.size + 1 >= words.length;
       setClean(prev => new Set(prev).add(current.id));
+      const newCombo = combo + 1;
+      setCombo(newCombo);
+
+      // 5연속 정답 보너스: +3초
+      if (newCombo > 0 && newCombo % 5 === 0) {
+        setTimeLeft(prev => prev + 3);
+        setTimePen({ text: '+3초!', type: 'good' });
+        setTimeout(() => setTimePen(null), 1000);
+      }
 
       if (isLastWord) {
         setTimeout(() => {
@@ -434,6 +445,7 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
         setMissed(prev => [...prev, current]);
       }
       setClean(prev => new Set(prev).add(current.id)); // 완료 처리 (다시 안나오게)
+      setCombo(0); // 콤보 리셋
 
       playAngrySound();
 
@@ -441,7 +453,9 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
         i === idx ? { ...a, mood: 'angry', status: 'wrong' } : a
       ));
 
-      // Penalty
+      // 오답 페널티: -3초 표시
+      setTimePen({ text: '-3초!', type: 'bad' });
+      setTimeout(() => setTimePen(null), 1000);
       setTimeLeft(prev => Math.max(0, prev - 3));
 
       // 마지막 단어인지 확인
@@ -492,10 +506,16 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
       {!gameOver && (
         <div className="ag-timer-area">
           <div className="ag-timer-display">{timeLeft}</div>
+          {timePen && <div className={`ag-time-pen ${timePen.type}`}>{timePen.text}</div>}
           <div className="ag-fuse-bar">
             <div className="ag-fuse-fill" style={{ width: `${fusePercent}%` }} />
           </div>
         </div>
+      )}
+
+      {/* 콤보 표시 */}
+      {combo >= 2 && !gameOver && countdown === null && (
+        <div className="ag-combo">🔥 {combo}연속!</div>
       )}
 
       {/* Countdown */}

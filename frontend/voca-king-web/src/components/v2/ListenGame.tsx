@@ -110,6 +110,8 @@ export default function ListenGame({ words, allWords, dayId, onFinish, onBack, o
   const [showReady, setShowReady] = useState(true);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [gameStarted, setGameStarted] = useState(false);
+  const [combo, setCombo] = useState(0);
+  const [timePen, setTimePen] = useState<{ text: string; type: 'good' | 'bad' } | null>(null);
 
   const timerRef = useRef<number | null>(null);
   const scoreRef = useRef(0);
@@ -219,13 +221,25 @@ export default function ListenGame({ words, allWords, dayId, onFinish, onBack, o
       playCorrectSound();
       setRightCount(prev => prev + 1);
       scoreRef.current += 1;
+      const newCombo = combo + 1;
+      setCombo(newCombo);
+
+      // 5연속 정답 보너스: +3초
+      if (newCombo > 0 && newCombo % 5 === 0) {
+        setTimeLeft(prev => prev + 3);
+        setTimePen({ text: '+3초!', type: 'good' });
+        setTimeout(() => setTimePen(null), 1000);
+      }
     } else {
       playWrongSound();
+      setCombo(0); // 콤보 리셋
       // 오답: missed에 추가
       if (!allMissed.some(w => w.id === q.word.id)) {
         setAllMissed(prev => [...prev, q.word]);
       }
-      // Penalty
+      // 오답 페널티: -3초 표시
+      setTimePen({ text: '-3초!', type: 'bad' });
+      setTimeout(() => setTimePen(null), 1000);
       setTimeLeft(prev => Math.max(0, prev - 3));
     }
 
@@ -287,12 +301,18 @@ export default function ListenGame({ words, allWords, dayId, onFinish, onBack, o
       {/* Timer */}
       <div className="ls-timer-area">
         <div className="ls-timer-display">{timeDisplay}</div>
+        {timePen && <div className={`ls-time-pen ${timePen.type}`}>{timePen.text}</div>}
         <div className="ls-fuse-bar">
           <div className="ls-fuse-fill" style={{ width: `${fusePercent}%` }} />
           <div className="ls-fuse-fire" style={{ left: `calc(${100 - fusePercent}% - 2px)` }}>🔥</div>
           <div className="ls-fuse-bomb">💣</div>
         </div>
       </div>
+
+      {/* 콤보 표시 */}
+      {combo >= 2 && !gameOver && gameStarted && countdown === null && (
+        <div className="ls-combo">🔥 {combo}연속!</div>
+      )}
 
       {/* Ready Screen */}
       {showReady && (
