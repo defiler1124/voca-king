@@ -153,6 +153,76 @@ export function buildScene(levelIndex: number, dayIndex: number): string {
       s += `<path d="${wave(gy - 20, 30)}" fill="#e1eefc"/><path d="${wave(gy + 30, 20)}" fill="#fff"/>`;
       for (let i = 0; i < 60; i++) s += `<circle cx="${ri(0, W)}" cy="${ri(0, H)}" r="${ri(1, 3)}" fill="#fff" opacity=".9"/>`;
       break;
+    case 'mall': {
+      // 백화점 - 상점 건물들 + 타일 바닥
+      const top = H * 0.1;
+      const PC = ['#ffd1dc', '#cfe8ff', '#d9f7d0', '#fff0b8', '#e7d6ff'];
+      let x = -20, i = 0;
+      while (x < W) {
+        const w = ri(110, 150);
+        const c = PC[i % PC.length];
+        s += `<rect x="${x}" y="${top}" width="${w - 8}" height="${gy - top + 30}" fill="${c}" stroke="#fff" stroke-width="4"/>`;
+        s += `<rect x="${x + 12}" y="${top + 46}" width="${w - 32}" height="${gy - top - 40}" fill="#ffffff" opacity=".6"/>`;
+        for (let k2 = 0; k2 < 6; k2++) {
+          s += `<rect x="${x + k2 * (w - 8) / 6}" y="${top}" width="${(w - 8) / 6}" height="26" fill="${k2 % 2 ? '#ffffff' : ['#ff6b8a', '#4da3ff', '#3cc98a', '#ff9f1a', '#a05cf0'][i % 5]}"/>`;
+        }
+        x += w;
+        i++;
+      }
+      s += `<rect x="0" y="${gy + 30}" width="${W}" height="${H - gy}" fill="url(#gr)"/>`;
+      // 타일 바닥 패턴
+      for (let y = gy + 70; y < H; y += 50) s += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="#d4c3ae" stroke-width="2"/>`;
+      for (let x2 = 0; x2 < W; x2 += 70) s += `<line x1="${x2}" y1="${gy + 30}" x2="${x2 + (x2 - W / 2) * 0.4}" y2="${H}" stroke="#d4c3ae" stroke-width="2"/>`;
+      break;
+    }
+    case 'library': {
+      // 도서관 - 책장들 + 나무 바닥
+      const BC = ['#d9534f', '#4da3ff', '#3cc98a', '#f0ad4e', '#8a6cff', '#e67e22', '#16a085', '#c0392b'];
+      for (let x = 10; x < W; x += 130) {
+        const sw = 118, top = H * 0.06, bot = gy + 40;
+        s += `<rect x="${x}" y="${top}" width="${sw}" height="${bot - top}" fill="#8a5a2b" rx="4"/>`;
+        const rows = 4, rh = (bot - top - 16) / rows;
+        for (let rr = 0; rr < rows; rr++) {
+          const ry = top + 8 + rr * rh;
+          s += `<rect x="${x + 6}" y="${ry}" width="${sw - 12}" height="${rh - 8}" fill="#5e3b1c"/>`;
+          let bx = x + 8;
+          while (bx < x + sw - 14) {
+            const bw = ri(7, 13), bh = ri(rh * 0.55, rh - 12);
+            s += `<rect x="${bx}" y="${ry + rh - 8 - bh}" width="${bw}" height="${bh}" fill="${BC[Math.floor(R() * BC.length)]}" rx="1.5"/>`;
+            bx += bw + 1.5;
+          }
+        }
+      }
+      s += `<rect x="0" y="${gy + 40}" width="${W}" height="${H - gy}" fill="url(#gr)"/>`;
+      // 나무 바닥 줄
+      for (let y = gy + 70; y < H; y += 34) s += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="#8f6237" stroke-width="2" opacity=".6"/>`;
+      // 타원형 카펫
+      s += `<ellipse cx="${W * 0.5}" cy="${H * 0.82}" rx="${W * 0.42}" ry="${H * 0.08}" fill="#c0392b" opacity=".35"/>`;
+      break;
+    }
+    case 'amuse': {
+      // 놀이공원 - 관람차 + 롤러코스터
+      s += `<path d="${wave(gy - 10, 22)}" fill="${T.g[0]}" opacity=".7"/><path d="${wave(gy + 30, 16)}" fill="url(#gr)"/>`;
+      // 관람차
+      const fx = W * 0.2, fy = gy - 60, fr = 90;
+      s += `<circle cx="${fx}" cy="${fy}" r="${fr}" fill="none" stroke="#ff6b8a" stroke-width="6"/>`;
+      for (let a = 0; a < 12; a++) {
+        const an = a * Math.PI / 6;
+        const cx = fx + fr * Math.cos(an), cy = fy + fr * Math.sin(an);
+        s += `<line x1="${fx}" y1="${fy}" x2="${cx}" y2="${cy}" stroke="#ffb3c4" stroke-width="2"/>`;
+        s += `<circle cx="${cx}" cy="${cy}" r="9" fill="${['#ffd43b', '#4da3ff', '#3cc98a', '#a05cf0'][a % 4]}"/>`;
+      }
+      s += `<line x1="${fx}" y1="${fy}" x2="${fx - 50}" y2="${gy + 40}" stroke="#888" stroke-width="5"/>`;
+      s += `<line x1="${fx}" y1="${fy}" x2="${fx + 50}" y2="${gy + 40}" stroke="#888" stroke-width="5"/>`;
+      // 롤러코스터 트랙
+      let d = `M${W * 0.45} ${gy + 10}`;
+      for (let x = W * 0.45; x < W + 40; x += 60) d += ` Q${x + 30} ${gy - ri(40, 110)} ${x + 60} ${gy + 10}`;
+      s += `<path d="${d}" fill="none" stroke="#ff4d4d" stroke-width="6"/>`;
+      for (let x = W * 0.47; x < W; x += 30) s += `<line x1="${x}" y1="${gy + 10}" x2="${x}" y2="${gy + 40}" stroke="#c94a4a" stroke-width="2"/>`;
+      // 바닥 점들
+      for (let i = 0; i < 20; i++) s += `<circle cx="${ri(0, W)}" cy="${ri(gy + 60, H)}" r="3" fill="${['#ff6b8a', '#ffd43b', '#4da3ff'][i % 3]}" opacity=".8"/>`;
+      break;
+    }
     default:
       s += `<path d="${wave(gy - 10, 26)}" fill="${T.g[0]}" opacity=".7"/><path d="${wave(gy + 30, 18)}" fill="url(#gr)"/>`;
       for (let i = 0; i < 26; i++) s += `<circle cx="${ri(0, W)}" cy="${ri(gy + 50, H)}" r="2.6" fill="${['#fff', '#ff9ec4', '#ffd43b'][i % 3]}" opacity=".8"/>`;
