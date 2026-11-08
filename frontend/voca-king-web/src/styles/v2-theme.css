@@ -634,15 +634,18 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  margin: 14px 12px 12px;
+  padding: 14px 12px 12px;
+  width: 100%;
   max-width: 720px;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .v2-footer-deco {
   font-size: 28px;
   flex-shrink: 0;
+  width: 32px;
+  text-align: center;
 }
 
 .v2-footer-content {
@@ -651,6 +654,7 @@
   padding: 10px 24px 12px;
   text-align: center;
   flex: 1;
+  min-width: 0;
 }
 
 .v2-footer .brand {
