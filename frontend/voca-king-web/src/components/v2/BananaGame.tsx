@@ -349,8 +349,8 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
           <div className="bn-timer-display">{formatTime(timeLeft)}</div>
           <div className="bn-fuse-bar">
             <div className="bn-fuse-fill" style={{ width: `${fusePercent}%` }} />
-            <div className="bn-fuse-fire" style={{ left: `${fusePercent}%` }}>🔥</div>
-            {timePen && <div className={`bn-time-pen ${timePen.type}`} style={{ left: `${fusePercent}%` }}>{timePen.text}</div>}
+            <div className="bn-fuse-fire" style={{ left: `${100 - fusePercent}%` }}>🔥</div>
+            {timePen && <div className={`bn-time-pen ${timePen.type}`} style={{ left: `${100 - fusePercent}%` }}>{timePen.text}</div>}
             <div className="bn-fuse-bomb">💣</div>
           </div>
         </div>

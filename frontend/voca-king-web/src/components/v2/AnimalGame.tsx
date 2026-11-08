@@ -505,11 +505,12 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
       {/* Timer - hide when gameOver */}
       {!gameOver && (
         <div className="ag-timer-area">
-          <div className="ag-timer-display">{timeLeft}</div>
+          <div className="ag-timer-display">{formatTime(timeLeft)}</div>
           <div className="ag-fuse-bar">
             <div className="ag-fuse-fill" style={{ width: `${fusePercent}%` }} />
-            <div className="ag-fuse-fire" style={{ left: `${fusePercent}%` }}>🔥</div>
-            {timePen && <div className={`ag-time-pen ${timePen.type}`} style={{ left: `${fusePercent}%` }}>{timePen.text}</div>}
+            <div className="ag-fuse-fire" style={{ left: `${100 - fusePercent}%` }}>🔥</div>
+            {timePen && <div className={`ag-time-pen ${timePen.type}`} style={{ left: `${100 - fusePercent}%` }}>{timePen.text}</div>}
+            <div className="ag-fuse-bomb">💣</div>
           </div>
         </div>
       )}

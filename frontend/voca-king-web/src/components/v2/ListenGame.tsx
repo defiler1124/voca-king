@@ -303,8 +303,8 @@ export default function ListenGame({ words, allWords, dayId, onFinish, onBack, o
         <div className="ls-timer-display">{timeDisplay}</div>
         <div className="ls-fuse-bar">
           <div className="ls-fuse-fill" style={{ width: `${fusePercent}%` }} />
-          <div className="ls-fuse-fire" style={{ left: `${fusePercent}%` }}>🔥</div>
-          {timePen && <div className={`ls-time-pen ${timePen.type}`} style={{ left: `${fusePercent}%` }}>{timePen.text}</div>}
+          <div className="ls-fuse-fire" style={{ left: `${100 - fusePercent}%` }}>🔥</div>
+          {timePen && <div className={`ls-time-pen ${timePen.type}`} style={{ left: `${100 - fusePercent}%` }}>{timePen.text}</div>}
           <div className="ls-fuse-bomb">💣</div>
         </div>
       </div>
