@@ -201,6 +201,8 @@ export default function HomePageV2() {
   }, [currentDay, animalClearedDays]);
 
   const currentLevel = levels.find((l) => l.id === currentLevelId);
+  const levelIndex = levels.findIndex((l) => l.id === currentLevelId);
+  const dayIndex = currentDay ? (currentDay.dayNumber || 1) - 1 : 0;
 
   const handleSpeak = async (word: Word) => {
     setPlayingWordId(word.id);
@@ -293,7 +295,7 @@ export default function HomePageV2() {
 
   return (
     <div className="v2-container">
-      <SceneBackground />
+      <SceneBackground levelIndex={levelIndex >= 0 ? levelIndex : 0} dayIndex={dayIndex} />
 
       {/* Header */}
       <header className="v2-header">
