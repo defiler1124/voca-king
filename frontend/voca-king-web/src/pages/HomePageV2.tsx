@@ -321,8 +321,8 @@ export default function HomePageV2() {
         >
           {levels.map((level, idx) => (
             <button key={level.id} className={`v2-lv-chip ${currentLevelId === level.id ? 'active' : ''}`} onClick={() => setCurrentLevel(level.id)}>
-              <b>{LEVEL_EMOJIS[idx + 1] || '📚'} {level.name.replace('Lv.', '').replace(' Newbie', '').replace(' Master', '').replace(' Grand Master', '').replace(' Legend', '').replace(' Voca King', '')}</b>
-              <span>{level.name.includes('Newbie') ? 'Newbie' : level.name.includes('Master') ? 'Master' : level.name.includes('Legend') ? 'Legend' : 'King'}</span>
+              <b>{LEVEL_EMOJIS[idx + 1] || '📚'} {level.name.replace('Lv.', '').replace(' Voca King', '').replace(' Grand Master', '').replace(' Legend', '').replace(' Master', '').replace(' Newbie', '')}</b>
+              <span>{level.name.includes('Voca King') ? 'Voca King' : level.name.includes('Grand Master') ? 'Grand Master' : level.name.includes('Legend') ? 'Legend' : level.name.includes('Master') ? 'Master' : 'Newbie'}</span>
             </button>
           ))}
         </div>
