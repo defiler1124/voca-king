@@ -410,40 +410,52 @@ export default function HomePageV2() {
       {viewMode === 'selftest' && activeGame === 'flash' && currentDay && (
         <div className="v2-flash-fullscreen">
           <div className="v2-flash-header">
-            <button className="v2-flash-back" onClick={() => setActiveGame(null)}>← 목록으로</button>
-            <div className="v2-flash-title">📚 플래시카드</div>
+            <button className="v2-flash-back" onClick={() => setActiveGame(null)}>← 목록</button>
+            <div className="v2-flash-title">🚀 플래시카드</div>
             <div className="v2-flash-progress">{seenCards.size} / {currentDay.words.length}</div>
           </div>
-          <div className="v2-flash-content">
-            <div className="v2-flash-guide">
-              {flashCleared ? '🎉 모든 카드를 확인했습니다!' : '카드를 탭해서 뜻을 확인하세요 (모든 카드를 확인하면 클리어)'}
+          {flashCleared ? (
+            <div className="v2-flash-clear">
+              <div className="v2-flash-clear-crown">👑</div>
+              <div className="v2-flash-clear-title">STAGE CLEAR!</div>
+              <div className="v2-flash-clear-stars">★★★</div>
+              <div className="v2-flash-clear-msg">모든 카드를 확인했어요! 시간 제한 없이 편하게 복습했어요.</div>
+              <div className="v2-flash-clear-btns">
+                <button className="v2-flash-clear-btn secondary" onClick={() => { setSeenCards(new Set()); setFlashIndex(0); setShowKorean(false); }}>다시 하기</button>
+                <button className="v2-flash-clear-btn primary" onClick={() => setActiveGame('match')}>다음 스테이지 ▶</button>
+                <button className="v2-flash-clear-btn secondary" onClick={() => setActiveGame(null)}>목록</button>
+              </div>
             </div>
-            <div className={`v2-flash-card ${showKorean ? 'open' : ''}`} onClick={toggleFlashKr}>
-              <div className="v2-flash-num">{flashIndex + 1} / {currentDay.words.length}</div>
-              <div className="v2-flash-en">{currentDay.words[flashIndex].english}</div>
-              {showKorean ? (
-                <div className="v2-flash-kr">{currentDay.words[flashIndex].korean}</div>
-              ) : (
-                <>
-                  <div className="v2-flash-question">?</div>
-                  <div className="v2-flash-hint">뜻을 떠올린 뒤 탭 👆</div>
-                </>
-              )}
+          ) : (
+            <div className="v2-flash-content">
+              <div className="v2-flash-guide">카드를 탭해서 뜻을 확인하세요 (모든 카드를 확인하면 클리어)</div>
+              <div className={`v2-flash-card ${showKorean ? 'open' : ''}`} onClick={toggleFlashKr}>
+                <div className="v2-flash-num">{flashIndex + 1} / {currentDay.words.length}</div>
+                <div className="v2-flash-en">{currentDay.words[flashIndex].english}</div>
+                {showKorean ? (
+                  <div className="v2-flash-kr">{currentDay.words[flashIndex].korean}</div>
+                ) : (
+                  <>
+                    <div className="v2-flash-question">?</div>
+                    <div className="v2-flash-hint">뜻을 떠올린 뒤 탭 👆</div>
+                  </>
+                )}
+              </div>
+              <div className="v2-flash-nav">
+                <button className="v2-flash-btn" onClick={flashPrev}>◀</button>
+                <button className="v2-flash-btn speak" onClick={() => speak(currentDay.words[flashIndex].english)}>🔊</button>
+                <button className="v2-flash-btn" onClick={flashNext}>▶</button>
+              </div>
+              <div className="v2-flash-dots">
+                {currentDay.words.map((_, idx) => (
+                  <span
+                    key={idx}
+                    className={`v2-flash-dot ${seenCards.has(idx) ? 'seen' : ''} ${idx === flashIndex ? 'current' : ''}`}
+                  />
+                ))}
+              </div>
             </div>
-            <div className="v2-flash-nav">
-              <button className="v2-flash-btn" onClick={flashPrev}>◀</button>
-              <button className="v2-flash-btn speak" onClick={() => speak(currentDay.words[flashIndex].english)}>🔊</button>
-              <button className="v2-flash-btn" onClick={flashNext}>▶</button>
-            </div>
-            <div className="v2-flash-dots">
-              {currentDay.words.map((_, idx) => (
-                <span
-                  key={idx}
-                  className={`v2-flash-dot ${seenCards.has(idx) ? 'seen' : ''} ${idx === flashIndex ? 'current' : ''}`}
-                />
-              ))}
-            </div>
-          </div>
+          )}
         </div>
       )}
 
