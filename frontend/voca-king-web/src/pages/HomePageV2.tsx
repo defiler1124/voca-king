@@ -476,6 +476,7 @@ export default function HomePageV2() {
           dayId={currentDay.id}
           onFinish={handleBananaFinish}
           onBack={() => setActiveGame(null)}
+          onNextStage={() => setActiveGame('pop')}
         />
       )}
 

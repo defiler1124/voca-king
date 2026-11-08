@@ -13,6 +13,7 @@ interface Props {
   dayId: number;
   onFinish: (score: number, total: number) => void;
   onBack: () => void;
+  onNextStage?: () => void;
 }
 
 type MonkeyMood = 'idle' | 'happy' | 'eat' | 'angry';
@@ -74,7 +75,7 @@ function playWrongSound() {
   osc.stop(now + 0.35);
 }
 
-export default function BananaGame({ words, allWords, dayId, onFinish, onBack }: Props) {
+export default function BananaGame({ words, allWords, dayId, onFinish, onBack, onNextStage }: Props) {
   const [queue, setQueue] = useState<Word[]>([]);
   const [current, setCurrent] = useState<Word | null>(null);
   const [clean, setClean] = useState<Set<number>>(new Set());
@@ -336,7 +337,7 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack }:
             <div className="bn-clear-time">{formatTime(clearTime)} 만에 클리어 (제한 {formatTime(GAME_TIME)})</div>
             <div className="bn-clear-btns">
               <button className="bn-clear-btn secondary" onClick={() => window.location.reload()}>다시 하기</button>
-              <button className="bn-clear-btn primary" onClick={onBack}>다음 스테이지 ▶</button>
+              <button className="bn-clear-btn primary" onClick={onNextStage || onBack}>다음 스테이지 ▶</button>
               <button className="bn-clear-btn secondary" onClick={onBack}>목록</button>
             </div>
           </div>
