@@ -506,9 +506,10 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
       {!gameOver && (
         <div className="ag-timer-area">
           <div className="ag-timer-display">{timeLeft}</div>
-          {timePen && <div className={`ag-time-pen ${timePen.type}`}>{timePen.text}</div>}
           <div className="ag-fuse-bar">
             <div className="ag-fuse-fill" style={{ width: `${fusePercent}%` }} />
+            <div className="ag-fuse-fire" style={{ left: `${fusePercent}%` }}>🔥</div>
+            {timePen && <div className={`ag-time-pen ${timePen.type}`} style={{ left: `${fusePercent}%` }}>{timePen.text}</div>}
           </div>
         </div>
       )}
