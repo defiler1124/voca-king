@@ -13,6 +13,7 @@ interface Props {
   dayId: number;
   onFinish: (score: number, total: number) => void;
   onBack: () => void;
+  onFinalTest?: () => void;
 }
 
 const GAME_TIME = 60;
@@ -79,7 +80,7 @@ function playWrongSound() {
   osc.stop(now + 0.35);
 }
 
-export default function ListenGame({ words, allWords, dayId, onFinish, onBack }: Props) {
+export default function ListenGame({ words, allWords, dayId, onFinish, onBack, onFinalTest }: Props) {
   const [round, setRound] = useState(1);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -91,6 +92,8 @@ export default function ListenGame({ words, allWords, dayId, onFinish, onBack }:
   const [showResult, setShowResult] = useState(false);
   const [timeLeft, setTimeLeft] = useState(GAME_TIME);
   const [gameOver, setGameOver] = useState(false);
+  const [stageClear, setStageClear] = useState(false);
+  const [clearTime, setClearTime] = useState(0);
   const [countdown, setCountdown] = useState<number | null>(3);
   const [gameStarted, setGameStarted] = useState(false);
   const [showRetry, setShowRetry] = useState(false);
@@ -248,11 +251,15 @@ export default function ListenGame({ words, allWords, dayId, onFinish, onBack }:
           } else {
             // All correct
             if (timerRef.current) clearInterval(timerRef.current);
+            setStageClear(true);
+            setClearTime(GAME_TIME - timeLeft);
             setGameOver(true);
           }
         } else {
           // All correct this round
           if (timerRef.current) clearInterval(timerRef.current);
+          setStageClear(true);
+          setClearTime(GAME_TIME - timeLeft);
           setGameOver(true);
         }
       }
@@ -265,6 +272,19 @@ export default function ListenGame({ words, allWords, dayId, onFinish, onBack }:
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
   const timeDisplay = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+  const formatTime = (sec: number) => {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
+
+  // Star rating: 3 stars = no missed, 2 stars = 1-2 missed, 1 star = 3+ missed
+  const getStars = () => {
+    if (allMissed.length === 0) return '★★★';
+    if (allMissed.length <= 2) return '★★☆';
+    return '★☆☆';
+  };
 
   return (
     <div className="ls-game">
@@ -294,16 +314,41 @@ export default function ListenGame({ words, allWords, dayId, onFinish, onBack }:
 
       {/* Game Over */}
       {gameOver && (
-        <div className="ls-result">
-          <div className="ls-result-emoji">
-            {done.size === words.length ? '👑' : done.size >= words.length * 0.8 ? '🎉' : '🎧'}
+        stageClear ? (
+          <div className="ls-clear">
+            <div className="ls-clear-crown">👑</div>
+            <div className="ls-clear-title">STAGE CLEAR!</div>
+            <div className="ls-clear-stars">{getStars()}</div>
+            <div className="ls-clear-time">{formatTime(clearTime)} 만에 클리어 (제한 {formatTime(GAME_TIME)})</div>
+            <div className="ls-clear-final-msg">🎉 4개 스테이지 모두 클리어! 파이널테스트에 도전하세요</div>
+            {allMissed.length > 0 && (
+              <div className="ls-clear-missed">
+                <div className="ls-clear-missed-title">다시 볼 단어</div>
+                <div className="ls-clear-missed-list">
+                  {allMissed.map((w, i) => (
+                    <span key={w.id}>{w.english} - {w.korean}{i < allMissed.length - 1 ? ', ' : ''}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="ls-clear-btns">
+              <button className="ls-clear-btn secondary" onClick={() => window.location.reload()}>다시 하기</button>
+              <button className="ls-clear-btn primary" onClick={onFinalTest || onBack}>파이널테스트로 ▶</button>
+              <button className="ls-clear-btn secondary" onClick={onBack}>목록</button>
+            </div>
           </div>
-          <div className="ls-result-score">{done.size} / {words.length}</div>
-          <div className="ls-result-msg">
-            {done.size === words.length ? '완벽해요!' : done.size >= words.length * 0.8 ? '잘했어요!' : '다시 도전해요!'}
+        ) : (
+          <div className="ls-result">
+            <div className="ls-result-emoji">
+              {done.size >= words.length * 0.8 ? '🎉' : '🎧'}
+            </div>
+            <div className="ls-result-score">{done.size} / {words.length}</div>
+            <div className="ls-result-msg">
+              {done.size >= words.length * 0.8 ? '잘했어요!' : '다시 도전해요!'}
+            </div>
+            <button className="ls-result-btn" onClick={onBack}>목록으로</button>
           </div>
-          <button className="ls-result-btn" onClick={onBack}>목록으로</button>
-        </div>
+        )
       )}
 
       {/* Retry message */}

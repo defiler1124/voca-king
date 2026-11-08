@@ -354,3 +354,123 @@
   transform: translateY(3px);
   box-shadow: 0 1px 0 #d99a00;
 }
+
+/* STAGE CLEAR 화면 */
+.ls-clear {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+}
+
+.ls-clear-crown {
+  font-size: 70px;
+  margin-bottom: 12px;
+  animation: ls-crown-bounce 0.6s ease-out;
+}
+
+@keyframes ls-crown-bounce {
+  0% { transform: scale(0.3) rotate(-10deg); opacity: 0; }
+  50% { transform: scale(1.15) rotate(5deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.ls-clear-title {
+  font-family: 'Baloo 2', sans-serif;
+  font-size: 38px;
+  font-weight: 900;
+  color: #1a3a5c;
+  text-shadow: 0 2px 0 rgba(255,255,255,0.5);
+  margin-bottom: 10px;
+}
+
+.ls-clear-stars {
+  font-size: 42px;
+  color: #ffd43b;
+  text-shadow: 0 0 15px rgba(255,212,59,0.5);
+  margin-bottom: 12px;
+  animation: ls-stars-pop 0.8s ease-out 0.3s both;
+}
+
+@keyframes ls-stars-pop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.ls-clear-time {
+  font-size: 15px;
+  color: #3a5a7c;
+  margin-bottom: 10px;
+}
+
+.ls-clear-final-msg {
+  font-size: 16px;
+  font-weight: 700;
+  color: #2a5a8c;
+  margin-bottom: 16px;
+}
+
+.ls-clear-missed {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px 20px;
+  margin-bottom: 16px;
+  max-width: 320px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.ls-clear-missed-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #1a3a5c;
+  margin-bottom: 6px;
+}
+
+.ls-clear-missed-list {
+  font-size: 14px;
+  color: #5a7a9c;
+  line-height: 1.5;
+}
+
+.ls-clear-btns {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.ls-clear-btn {
+  padding: 12px 20px;
+  border-radius: 20px;
+  border: none;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.ls-clear-btn.primary {
+  background: linear-gradient(180deg, #ffe58a, #ffc02e);
+  color: #4a2a00;
+  box-shadow: 0 4px 0 #d99a00, 0 8px 16px rgba(0,0,0,0.15);
+}
+
+.ls-clear-btn.primary:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #d99a00;
+}
+
+.ls-clear-btn.secondary {
+  background: rgba(30,60,90,0.2);
+  color: #1a3a5c;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.1), 0 8px 16px rgba(0,0,0,0.05);
+}
+
+.ls-clear-btn.secondary:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.1);
+}

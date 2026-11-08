@@ -498,6 +498,7 @@ export default function HomePageV2() {
           dayId={currentDay.id}
           onFinish={(_score, _total) => {}}
           onBack={() => setActiveGame(null)}
+          onFinalTest={() => { setActiveGame(null); setViewMode('final'); }}
         />
       )}
 
