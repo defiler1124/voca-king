@@ -675,7 +675,13 @@
   font-size: 0.44em;
   color: #7a8a76;
   line-height: 1.4;
-  white-space: nowrap;
+  word-break: keep-all;
+}
+
+@media (max-width: 600px) {
+  .v2-footer .legal {
+    font-size: 0.38em;
+  }
 }
 
 /* ── Game Screen ── */
