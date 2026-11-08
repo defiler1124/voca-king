@@ -92,6 +92,8 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack }:
   const [slapDir, setSlapDir] = useState<'l' | 'r' | null>(null);
   const [timeLeft, setTimeLeft] = useState(GAME_TIME);
   const [gameOver, setGameOver] = useState(false);
+  const [stageClear, setStageClear] = useState(false);
+  const [clearTime, setClearTime] = useState(0);
   const [throwStyle, setThrowStyle] = useState<React.CSSProperties>({});
   const [countdown, setCountdown] = useState<number | null>(3);
   const [gameStarted, setGameStarted] = useState(false);
@@ -248,6 +250,8 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack }:
         setMood('idle');
         if (isLastWord) {
           if (timerRef.current) clearInterval(timerRef.current);
+          setStageClear(true);
+          setClearTime(GAME_TIME - timeLeft);
           setGameOver(true);
         } else {
           nextQuestion();
@@ -309,16 +313,45 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack }:
   if (gameOver) {
     return (
       <div className="bn-game">
-        <div className="bn-result">
-          <div className="bn-result-emoji">
-            {clean.size === words.length ? '👑' : clean.size >= words.length * 0.8 ? '🎉' : '🍌'}
-          </div>
-          <div className="bn-result-score">{clean.size} / {words.length}</div>
-          <div className="bn-result-msg">
-            {clean.size === words.length ? '완벽해요!' : clean.size >= words.length * 0.8 ? '잘했어요!' : '다시 도전해요!'}
-          </div>
-          <button className="bn-result-btn" onClick={onBack}>← 게임 목록</button>
+        {/* 헤더 - 타이머 고정 표시 */}
+        <div className="bn-header">
+          <button className="bn-back-btn" onClick={onBack}>← 목록</button>
+          <div className="bn-title">🍌 바나나 받아먹기</div>
+          <div className="bn-progress-text">{clean.size} / {words.length}</div>
         </div>
+        <div className="bn-timer-area">
+          <div className="bn-timer-display">{formatTime(timeLeft)}</div>
+          <div className="bn-fuse-bar">
+            <div className="bn-fuse-fill" style={{ width: `${fusePercent}%` }} />
+            <div className="bn-fuse-fire" style={{ left: `${fusePercent}%` }}>🔥</div>
+            <div className="bn-fuse-bomb">💣</div>
+          </div>
+        </div>
+
+        {stageClear ? (
+          <div className="bn-clear">
+            <div className="bn-clear-crown">👑</div>
+            <div className="bn-clear-title">STAGE CLEAR!</div>
+            <div className="bn-clear-stars">★★★</div>
+            <div className="bn-clear-time">{formatTime(clearTime)} 만에 클리어 (제한 {formatTime(GAME_TIME)})</div>
+            <div className="bn-clear-btns">
+              <button className="bn-clear-btn secondary" onClick={() => window.location.reload()}>다시 하기</button>
+              <button className="bn-clear-btn primary" onClick={onBack}>다음 스테이지 ▶</button>
+              <button className="bn-clear-btn secondary" onClick={onBack}>목록</button>
+            </div>
+          </div>
+        ) : (
+          <div className="bn-result">
+            <div className="bn-result-emoji">
+              {clean.size >= words.length * 0.8 ? '🎉' : '🍌'}
+            </div>
+            <div className="bn-result-score">{clean.size} / {words.length}</div>
+            <div className="bn-result-msg">
+              {clean.size >= words.length * 0.8 ? '잘했어요!' : '다시 도전해요!'}
+            </div>
+            <button className="bn-result-btn" onClick={onBack}>← 게임 목록</button>
+          </div>
+        )}
       </div>
     );
   }
