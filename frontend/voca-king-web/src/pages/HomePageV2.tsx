@@ -319,9 +319,9 @@ export default function HomePageV2() {
           onMouseUp={onLevelMouseUp}
           onMouseLeave={onLevelMouseUp}
         >
-          {levels.map((level) => (
+          {levels.map((level, idx) => (
             <button key={level.id} className={`v2-lv-chip ${currentLevelId === level.id ? 'active' : ''}`} onClick={() => setCurrentLevel(level.id)}>
-              <b>{LEVEL_EMOJIS[level.id] || '📚'} {level.name.replace('Lv.', '').replace(' Newbie', '').replace(' Master', '').replace(' Grand Master', '').replace(' Legend', '').replace(' Voca King', '')}</b>
+              <b>{LEVEL_EMOJIS[idx + 1] || '📚'} {level.name.replace('Lv.', '').replace(' Newbie', '').replace(' Master', '').replace(' Grand Master', '').replace(' Legend', '').replace(' Voca King', '')}</b>
               <span>{level.name.includes('Newbie') ? 'Newbie' : level.name.includes('Master') ? 'Master' : level.name.includes('Legend') ? 'Legend' : 'King'}</span>
             </button>
           ))}
