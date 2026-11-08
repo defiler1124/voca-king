@@ -52,6 +52,7 @@
 
 /* 타이머 영역 */
 .bn-timer-area {
+  position: relative;
   padding: 0 16px 8px;
 }
 

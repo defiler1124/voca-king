@@ -52,6 +52,7 @@
 
 /* Timer */
 .ls-timer-area {
+  position: relative;
   padding: 0 16px 8px;
 }
 
