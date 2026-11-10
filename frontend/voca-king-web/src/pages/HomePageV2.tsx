@@ -66,7 +66,7 @@ type ViewMode = 'cards' | 'selftest' | 'final';
 type GameType = 'flash' | 'match' | 'pop' | 'listen' | null;
 
 const GAME_STAGES = [
-  { id: 'flash' as const, no: 1, emoji: '📚', name: '플래시카드', theme: 'v2-t-flash' },
+  { id: 'flash' as const, no: 1, emoji: '📝', name: '플래시카드', theme: 'v2-t-flash' },
   { id: 'match' as const, no: 2, emoji: '🍌', name: '바나나 받아먹기', theme: 'v2-t-match' },
   { id: 'pop' as const, no: 3, emoji: '🐻', name: '동물 구출 팡팡', theme: 'v2-t-pop' },
   { id: 'listen' as const, no: 4, emoji: '🎧', name: '듣고 고르기', theme: 'v2-t-listen' },
@@ -417,7 +417,7 @@ export default function HomePageV2() {
         <div className="v2-flash-fullscreen">
           <div className="v2-flash-header">
             <button className="v2-flash-back" onClick={() => setActiveGame(null)}>← 목록</button>
-            <div className="v2-flash-title">🚀 플래시카드</div>
+            <div className="v2-flash-title">📝 플래시카드</div>
             <div className="v2-flash-progress">{seenCards.size} / {currentDay.words.length}</div>
           </div>
           {flashCleared && !flashReplaying ? (
