@@ -98,12 +98,15 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
   const [timePen, setTimePen] = useState<{ text: string; type: 'good' | 'bad' } | null>(null);
   const [countdown, setCountdown] = useState<number | null>(3);
   const [gameStarted, setGameStarted] = useState(false);
+  const [burstParticles, setBurstParticles] = useState<{ id: number; x: number; y: number; dx: number; dy: number; icon: string; isDot: boolean; color: string }[]>([]);
 
   const initRef = useRef(false);
   const timerRef = useRef<number | null>(null);
   const monkeyRef = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<HTMLDivElement>(null);
   const bananaRefs = useRef<(HTMLButtonElement | null)[]>([null, null]);
   const scoreRef = useRef(0);
+  const burstIdRef = useRef(0);
 
   // 카운트다운
   useEffect(() => {
@@ -202,6 +205,44 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
     }
   }, [gameOver, words.length, dayId, onFinish]);
 
+  // 폭죽 효과 (정답 시 원숭이 입 근처)
+  const triggerBurst = useCallback(() => {
+    const mk = monkeyRef.current;
+    const sc = sceneRef.current;
+    if (!mk || !sc) return;
+
+    const mkRect = mk.getBoundingClientRect();
+    const scRect = sc.getBoundingClientRect();
+    const x = mkRect.left - scRect.left + mkRect.width / 2;
+    const y = mkRect.top - scRect.top + mkRect.height * 0.6;
+
+    const icons = ['✨', '🍌', '⭐', '💛', '🎉'];
+    const cols = ['#ffd54a', '#7cff6b', '#4dd2ff', '#ff9f43', '#ff6b9d'];
+    const particles: typeof burstParticles = [];
+
+    for (let i = 0; i < 20; i++) {
+      const angle = (Math.PI * 2 * i) / 20;
+      const dist = 50 + Math.random() * 70;
+      const dx = Math.cos(angle) * dist;
+      const dy = Math.sin(angle) * dist - 15;
+      const isDot = i % 3 !== 0;
+
+      particles.push({
+        id: burstIdRef.current++,
+        x,
+        y,
+        dx,
+        dy,
+        icon: icons[i % 5],
+        isDot,
+        color: cols[i % 5],
+      });
+    }
+
+    setBurstParticles(particles);
+    setTimeout(() => setBurstParticles([]), 1000);
+  }, []);
+
   // 선택 처리
   const handlePick = (idx: number) => {
     if (locked || !current || gameOver) return;
@@ -230,7 +271,10 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
       // 정답
       playCorrectSound();
       setMood('eat');
-      setTimeout(() => setMood('happy'), 500);
+      setTimeout(() => {
+        setMood('happy');
+        triggerBurst();
+      }, 400);
 
       const isLastWord = clean.size + 1 >= words.length;
       setClean(prev => new Set(prev).add(current.id));
@@ -431,7 +475,7 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
       <div className="bn-hint">알맞은 뜻의 바나나를 탭해서 원숭이에게 주세요! 🍌</div>
 
       {/* 게임 씬 */}
-      <div className="bn-scene">
+      <div className="bn-scene" ref={sceneRef}>
         {/* 바나나들 */}
         <div className="bn-bananas">
           {[0, 1].map(idx => (
@@ -460,6 +504,41 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
           </div>
           <div className="bn-ground" />
         </div>
+
+        {/* 폭죽 효과 */}
+        {burstParticles.length > 0 && (
+          <>
+            <div className="bn-burst-ring" style={{ left: burstParticles[0]?.x, top: burstParticles[0]?.y }} />
+            {burstParticles.map(p => (
+              p.isDot ? (
+                <div
+                  key={p.id}
+                  className="bn-burst-dot"
+                  style={{
+                    left: p.x,
+                    top: p.y,
+                    backgroundColor: p.color,
+                    '--dx': `${p.dx}px`,
+                    '--dy': `${p.dy}px`,
+                  } as React.CSSProperties}
+                />
+              ) : (
+                <span
+                  key={p.id}
+                  className="bn-burst-spark"
+                  style={{
+                    left: p.x,
+                    top: p.y,
+                    '--dx': `${p.dx}px`,
+                    '--dy': `${p.dy}px`,
+                  } as React.CSSProperties}
+                >
+                  {p.icon}
+                </span>
+              )
+            ))}
+          </>
+        )}
       </div>
     </div>
   );
