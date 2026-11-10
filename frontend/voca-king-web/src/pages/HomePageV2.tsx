@@ -99,6 +99,7 @@ export default function HomePageV2() {
   const [shuffledQuizWords, setShuffledQuizWords] = useState<Word[]>([]);
   const [showMusicPanel, setShowMusicPanel] = useState(false);
   const [seenCards, setSeenCards] = useState<Set<number>>(new Set());
+  const [flashReplaying, setFlashReplaying] = useState(false); // 다시하기 모드
   const [flashClearedDays, setFlashClearedDays] = useState<Set<number>>(() => {
     try {
       const saved = localStorage.getItem('voca-king-flash-cleared');
@@ -175,12 +176,15 @@ export default function HomePageV2() {
   const bananaCleared = currentDay ? bananaClearedDays.has(currentDay.id) : false;
   const animalCleared = currentDay ? animalClearedDays.has(currentDay.id) : false;
 
-  // 모든 카드를 보면 클리어 상태 저장
+  // 모든 카드를 보면 클리어 상태 저장 + 다시하기 모드 해제
   useEffect(() => {
-    if (currentDay && seenCards.size >= currentDay.words.length && !flashClearedDays.has(currentDay.id)) {
-      const newSet = new Set(flashClearedDays).add(currentDay.id);
-      setFlashClearedDays(newSet);
-      localStorage.setItem('voca-king-flash-cleared', JSON.stringify([...newSet]));
+    if (currentDay && seenCards.size >= currentDay.words.length) {
+      if (!flashClearedDays.has(currentDay.id)) {
+        const newSet = new Set(flashClearedDays).add(currentDay.id);
+        setFlashClearedDays(newSet);
+        localStorage.setItem('voca-king-flash-cleared', JSON.stringify([...newSet]));
+      }
+      setFlashReplaying(false); // 다시하기 완료
     }
   }, [seenCards.size, currentDay, flashClearedDays]);
 
@@ -416,7 +420,7 @@ export default function HomePageV2() {
             <div className="v2-flash-title">🚀 플래시카드</div>
             <div className="v2-flash-progress">{seenCards.size} / {currentDay.words.length}</div>
           </div>
-          {flashCleared ? (
+          {flashCleared && !flashReplaying ? (
             <div className="v2-flash-clear">
               <div className="v2-flash-clear-crown">👑</div>
               <div className="v2-flash-clear-title">STAGE CLEAR!</div>
@@ -424,10 +428,11 @@ export default function HomePageV2() {
               <div className="v2-flash-clear-msg">모든 카드를 확인했어요! 시간 제한 없이 편하게 복습했어요.</div>
               <div className="v2-flash-clear-btns">
                 <button className="v2-flash-clear-btn secondary" onClick={() => {
-                  // 다시 하기: 카드 상태만 초기화, 클리어 기록은 유지 (바나나게임 잠금 방지)
+                  // 다시 하기: 카드 상태 초기화 + 다시하기 모드 활성화
                   setSeenCards(new Set());
                   setFlashIndex(0);
                   setShowKorean(false);
+                  setFlashReplaying(true);
                 }}>다시 하기</button>
                 <button className="v2-flash-clear-btn primary" onClick={() => setActiveGame('match')}>다음 스테이지 ▶</button>
                 <button className="v2-flash-clear-btn secondary" onClick={() => setActiveGame(null)}>목록</button>
