@@ -438,10 +438,10 @@ export default function HomePageV2() {
                   disabled={isLocked}
                 >
                   {isLocked && <div className="lock-icon">🔒</div>}
-                  {isCleared && <div className="clear-badge">✓ 클리어</div>}
                   <div className="stage-icon"><IconComponent /></div>
                   <div className="no">STAGE {stage.no}</div>
                   <div className="name">{stage.name}</div>
+                  <div className="clear-status">{isCleared ? '✔ 클리어' : ''}</div>
                 </button>
               );
             })}
