@@ -388,11 +388,22 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
     setTimePen({ text: '-3초!', type: 'bad' });
     setTimeout(() => setTimePen(null), 1000);
 
+    // cleanRef 즉시 업데이트 (useEffect보다 먼저)
+    cleanRef.current = new Set(cleanRef.current).add(word.id);
+
     // 다음 문제로
     setTimeout(() => {
-      setCurrent(null);
       setLocked(false);
       setShowMiss(false);
+      setCurrent(null);
+
+      // 직접 nextQuestion 호출 (모든 단어 완료 시 게임 오버)
+      if (cleanRef.current.size < words.length) {
+        // 약간의 딜레이 후 nextQuestion 호출 (상태 업데이트 반영)
+        setTimeout(() => {
+          nextQuestion();
+        }, 50);
+      }
     }, 1500);
   };
 
