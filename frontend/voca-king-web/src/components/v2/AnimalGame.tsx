@@ -222,6 +222,12 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
   const timerRef = useRef<number | null>(null);
   const fallTimerRef = useRef<number | null>(null);
   const fieldRef = useRef<HTMLDivElement>(null);
+  const cleanRef = useRef<Set<number>>(new Set());
+
+  // cleanRef를 항상 최신 상태로 유지
+  useEffect(() => {
+    cleanRef.current = clean;
+  }, [clean]);
 
   // Countdown
   useEffect(() => {
@@ -264,8 +270,11 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
     if (fallTimerRef.current) clearTimeout(fallTimerRef.current);
     if (gameOver) return;
 
+    // cleanRef.current를 사용해서 최신 상태 확인
+    const currentClean = cleanRef.current;
+
     // 모든 단어 완료 시 게임 오버
-    if (clean.size >= words.length) {
+    if (currentClean.size >= words.length) {
       if (timerRef.current) clearInterval(timerRef.current);
       setGameOver(true);
       return;
@@ -274,7 +283,7 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
     // 큐가 비어있으면 남은 단어로 새로 생성
     let q = [...queue];
     if (q.length === 0) {
-      q = shuffleArray(words.filter(w => !clean.has(w.id)));
+      q = shuffleArray(words.filter(w => !currentClean.has(w.id)));
     }
 
     // 큐에 단어가 없으면 게임 오버
@@ -318,7 +327,7 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
       handleMiss(word);
     }, (FALL_TIME + 1) * 1000);
 
-  }, [queue, clean, words, allWords, gameOver, locked]);
+  }, [queue, words, allWords, gameOver]);
 
   useEffect(() => {
     // 큐가 비어있어도 아직 처리할 단어가 있으면 nextQuestion 호출
@@ -379,9 +388,11 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
     setTimePen({ text: '-3초!', type: 'bad' });
     setTimeout(() => setTimePen(null), 1000);
 
-    // 다음 문제로 (current를 null로 설정하면 useEffect가 nextQuestion 호출)
+    // 다음 문제로
     setTimeout(() => {
       setCurrent(null);
+      setLocked(false);
+      setShowMiss(false);
     }, 1500);
   };
 
