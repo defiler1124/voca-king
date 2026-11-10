@@ -2,7 +2,7 @@
  * VOCA KING V2 홈 페이지
  * 숲/지도 테마 UI + 게임형 학습
  */
-import { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { useWordStore } from '../stores/wordStore';
 import { speak, initTTS } from '../utils/tts';
@@ -65,11 +65,46 @@ function playWrongSound() {
 type ViewMode = 'cards' | 'selftest' | 'final';
 type GameType = 'flash' | 'match' | 'pop' | 'listen' | null;
 
+// SVG 아이콘 컴포넌트들
+const FlashIcon = () => (
+  <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" width="48" height="48">
+    <rect x="10" y="14" width="34" height="42" rx="7" transform="rotate(-12 27 35)" fill="#9aa0ff" stroke="#6b72d6" strokeWidth="2"/>
+    <rect x="18" y="10" width="34" height="42" rx="7" transform="rotate(8 35 31)" fill="#fff" stroke="#8b92e8" strokeWidth="2"/>
+    <path d="M28 24 H44 M28 32 H40" stroke="#8b92e8" strokeWidth="3.5" strokeLinecap="round"/>
+    <path d="M50 6 l2.4 5.6 5.6 2.4-5.6 2.4L50 22l-2.4-5.6L42 14l5.6-2.4z" fill="#ffd54a" stroke="#e0a000" strokeWidth="1.2" strokeLinejoin="round"/>
+  </svg>
+);
+
+const ListenIcon = () => (
+  <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" width="48" height="48">
+    <path d="M12 38 V32 a20 20 0 0 1 40 0 V38" fill="none" stroke="#2f7fa8" strokeWidth="5" strokeLinecap="round"/>
+    <rect x="7" y="34" width="12" height="20" rx="6" fill="#4cc2e8" stroke="#2f7fa8" strokeWidth="2.5"/>
+    <rect x="45" y="34" width="12" height="20" rx="6" fill="#4cc2e8" stroke="#2f7fa8" strokeWidth="2.5"/>
+    <path d="M32 30 q4 4 0 8 M37 26 q8 8 0 16" stroke="#ff8aa0" strokeWidth="3.2" fill="none" strokeLinecap="round"/>
+    <circle cx="26" cy="34" r="3" fill="#ff8aa0"/>
+  </svg>
+);
+
+const BananaIcon = () => (
+  <span style={{ fontSize: '42px' }}>🍌</span>
+);
+
+const BearIcon = () => (
+  <span style={{ fontSize: '42px' }}>🐻</span>
+);
+
+const STAGE_ICONS: Record<string, React.FC> = {
+  flash: FlashIcon,
+  match: BananaIcon,
+  pop: BearIcon,
+  listen: ListenIcon,
+};
+
 const GAME_STAGES = [
-  { id: 'flash' as const, no: 1, emoji: '📝', name: '플래시카드', theme: 'v2-t-flash' },
-  { id: 'match' as const, no: 2, emoji: '🍌', name: '바나나 받아먹기', theme: 'v2-t-match' },
-  { id: 'pop' as const, no: 3, emoji: '🐻', name: '동물 구출 팡팡', theme: 'v2-t-pop' },
-  { id: 'listen' as const, no: 4, emoji: '🎧', name: '듣고 고르기', theme: 'v2-t-listen' },
+  { id: 'flash' as const, no: 1, name: '플래시카드', theme: 'v2-t-flash' },
+  { id: 'match' as const, no: 2, name: '바나나 받아먹기', theme: 'v2-t-match' },
+  { id: 'pop' as const, no: 3, name: '동물 구출 팡팡', theme: 'v2-t-pop' },
+  { id: 'listen' as const, no: 4, name: '듣고 고르기', theme: 'v2-t-listen' },
 ];
 
 const LEVEL_EMOJIS: Record<number, string> = {
@@ -383,7 +418,7 @@ export default function HomePageV2() {
 
       {viewMode === 'selftest' && !activeGame && (
         <div className="v2-word-scroll">
-          <div className="v2-hub-head"><div className="v2-hub-title">SELF TEST</div></div>
+          <div className="v2-hub-desc">플래시카드로 익히고, 3개 스테이지는 제한 시간 안에 클리어!</div>
           <div className="v2-hub-grid">
             {GAME_STAGES.map((stage) => {
               const isCleared = (stage.id === 'flash' && flashCleared) ||
@@ -394,6 +429,7 @@ export default function HomePageV2() {
                                (stage.id === 'match' && !flashCleared) ||
                                (stage.id === 'pop' && !bananaCleared) ||
                                (stage.id === 'listen' && !animalCleared));
+              const IconComponent = STAGE_ICONS[stage.id];
               return (
                 <button
                   key={stage.id}
@@ -403,7 +439,7 @@ export default function HomePageV2() {
                 >
                   {isLocked && <div className="lock-icon">🔒</div>}
                   {isCleared && <div className="clear-badge">✓ 클리어</div>}
-                  <div className="emoji">{stage.emoji}</div>
+                  <div className="stage-icon"><IconComponent /></div>
                   <div className="no">STAGE {stage.no}</div>
                   <div className="name">{stage.name}</div>
                 </button>
@@ -507,7 +543,7 @@ export default function HomePageV2() {
       {viewMode === 'selftest' && activeGame && activeGame !== 'flash' && activeGame !== 'match' && activeGame !== 'pop' && activeGame !== 'listen' && (
         <div className="v2-game-wrap">
           <div className="v2-result">
-            <div className="emoji">{GAME_STAGES.find(s => s.id === activeGame)?.emoji}</div>
+            <div className="stage-icon">{STAGE_ICONS[activeGame] && React.createElement(STAGE_ICONS[activeGame])}</div>
             <div className="score">{GAME_STAGES.find(s => s.id === activeGame)?.name}</div>
             <div className="msg">곧 출시됩니다!</div>
             <button className="v2-result-btn" onClick={() => setActiveGame(null)}>← 돌아가기</button>
