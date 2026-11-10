@@ -223,6 +223,7 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
   const fallTimerRef = useRef<number | null>(null);
   const fieldRef = useRef<HTMLDivElement>(null);
   const cleanRef = useRef<Set<number>>(new Set());
+  const nextQuestionRef = useRef<() => void>(() => {});
 
   // cleanRef를 항상 최신 상태로 유지
   useEffect(() => {
@@ -329,6 +330,11 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
 
   }, [queue, words, allWords, gameOver]);
 
+  // nextQuestionRef 항상 최신 함수로 유지
+  useEffect(() => {
+    nextQuestionRef.current = nextQuestion;
+  }, [nextQuestion]);
+
   useEffect(() => {
     // 큐가 비어있어도 아직 처리할 단어가 있으면 nextQuestion 호출
     if (gameStarted && !current && !gameOver && clean.size < words.length) {
@@ -397,11 +403,10 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
       setShowMiss(false);
       setCurrent(null);
 
-      // 직접 nextQuestion 호출 (모든 단어 완료 시 게임 오버)
+      // 직접 nextQuestion 호출 (ref 사용으로 항상 최신 함수)
       if (cleanRef.current.size < words.length) {
-        // 약간의 딜레이 후 nextQuestion 호출 (상태 업데이트 반영)
         setTimeout(() => {
-          nextQuestion();
+          nextQuestionRef.current();
         }, 50);
       }
     }, 1500);
