@@ -86,11 +86,11 @@ const ListenIcon = () => (
 );
 
 const BananaIcon = () => (
-  <span style={{ fontSize: '42px' }}>🍌</span>
+  <span style={{ fontSize: '38px', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px' }}>🍌</span>
 );
 
 const BearIcon = () => (
-  <span style={{ fontSize: '42px' }}>🐻</span>
+  <span style={{ fontSize: '38px', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px' }}>🐻</span>
 );
 
 const STAGE_ICONS: Record<string, React.FC> = {
