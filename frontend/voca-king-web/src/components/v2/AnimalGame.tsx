@@ -344,14 +344,16 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
     setLocked(true);
     setShowMiss(true);
 
-    // Requeue
+    // 콤보 리셋
+    setCombo(0);
+
+    // missed에 추가 (재큐하지 않음 - 한번씩만 출제)
     if (!missed.some(m => m.id === word.id)) {
       setMissed(prev => [...prev, word]);
     }
-    setQueue(prev => {
-      if (prev.some(w => w.id === word.id)) return prev;
-      return [...prev, word];
-    });
+
+    // 완료 처리 (다시 출제되지 않도록)
+    setClean(prev => new Set(prev).add(word.id));
 
     // Show correct answer
     setAnimals(prev => prev.map(a => ({
@@ -362,8 +364,10 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
 
     speak(word.english);
 
-    // Penalty
+    // Penalty: -3초
     setTimeLeft(prev => Math.max(0, prev - 3));
+    setTimePen({ text: '-3초!', type: 'bad' });
+    setTimeout(() => setTimePen(null), 1000);
 
     setTimeout(() => {
       setCurrent(null);
