@@ -264,16 +264,24 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
     if (fallTimerRef.current) clearTimeout(fallTimerRef.current);
     if (gameOver) return;
 
-    const isLastWord = clean.size + 1 >= words.length;
-    if (clean.size >= words.length || isLastWord && locked) {
+    // 모든 단어 완료 시 게임 오버
+    if (clean.size >= words.length) {
       if (timerRef.current) clearInterval(timerRef.current);
       setGameOver(true);
       return;
     }
 
+    // 큐가 비어있으면 남은 단어로 새로 생성
     let q = [...queue];
     if (q.length === 0) {
       q = shuffleArray(words.filter(w => !clean.has(w.id)));
+    }
+
+    // 큐에 단어가 없으면 게임 오버
+    if (q.length === 0) {
+      if (timerRef.current) clearInterval(timerRef.current);
+      setGameOver(true);
+      return;
     }
 
     const word = q.shift()!;
@@ -313,10 +321,11 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
   }, [queue, clean, words, allWords, gameOver, locked]);
 
   useEffect(() => {
-    if (gameStarted && queue.length > 0 && !current && !gameOver) {
+    // 큐가 비어있어도 아직 처리할 단어가 있으면 nextQuestion 호출
+    if (gameStarted && !current && !gameOver && clean.size < words.length) {
       nextQuestion();
     }
-  }, [gameStarted, queue, current, nextQuestion, gameOver]);
+  }, [gameStarted, current, nextQuestion, gameOver, clean.size, words.length]);
 
   useEffect(() => {
     if (gameOver) {
@@ -347,13 +356,14 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
     // 콤보 리셋
     setCombo(0);
 
-    // missed에 추가 (재큐하지 않음 - 한번씩만 출제)
+    // missed에 추가
     if (!missed.some(m => m.id === word.id)) {
       setMissed(prev => [...prev, word]);
     }
 
-    // 완료 처리 (다시 출제되지 않도록)
+    // 완료 처리 + 큐에서 제거 (다시 출제되지 않도록)
     setClean(prev => new Set(prev).add(word.id));
+    setQueue(prev => prev.filter(w => w.id !== word.id));
 
     // Show correct answer
     setAnimals(prev => prev.map(a => ({
@@ -369,9 +379,9 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
     setTimePen({ text: '-3초!', type: 'bad' });
     setTimeout(() => setTimePen(null), 1000);
 
+    // 다음 문제로 (current를 null로 설정하면 useEffect가 nextQuestion 호출)
     setTimeout(() => {
       setCurrent(null);
-      nextQuestion();
     }, 1500);
   };
 
