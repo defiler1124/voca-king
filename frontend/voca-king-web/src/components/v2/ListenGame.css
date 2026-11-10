@@ -84,8 +84,6 @@
 .ls-fuse-fill {
   position: absolute;
   top: 0;
-  left: auto;
-  right: 0;
   bottom: 0;
   background: repeating-linear-gradient(
     -55deg,
@@ -95,7 +93,7 @@
     #5cbf4a 16px
   );
   border-radius: 9px;
-  transition: width 0.3s linear;
+  transition: left 0.3s linear;
 }
 
 .ls-fuse-fire {
