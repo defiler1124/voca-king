@@ -27,7 +27,10 @@ function shuffleArray<T>(arr: T[]): T[] {
   return a;
 }
 
-const GAME_TIME = 60;
+// 타이머 계산: base + sec * 단어수 (원본 HTML 공식)
+const BANANA_BASE = 10;
+const BANANA_SEC_PER_WORD = 5;
+const calcGameTime = (wordCount: number) => BANANA_BASE + BANANA_SEC_PER_WORD * wordCount;
 
 // 효과음 (Web Audio API)
 let audioCtx: AudioContext | null = null;
@@ -76,6 +79,9 @@ function playWrongSound() {
 }
 
 export default function BananaGame({ words, allWords, dayId, onFinish, onBack, onNextStage }: Props) {
+  // 단어 수에 따른 게임 시간 계산
+  const gameTime = calcGameTime(words.length);
+
   const [queue, setQueue] = useState<Word[]>([]);
   const [current, setCurrent] = useState<Word | null>(null);
   const [clean, setClean] = useState<Set<number>>(new Set());
@@ -90,7 +96,7 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
   const [pickedIdx, setPickedIdx] = useState<number | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [slapDir, setSlapDir] = useState<'l' | 'r' | null>(null);
-  const [timeLeft, setTimeLeft] = useState(GAME_TIME);
+  const [timeLeft, setTimeLeft] = useState(() => calcGameTime(words.length));
   const [gameOver, setGameOver] = useState(false);
   const [stageClear, setStageClear] = useState(false);
   const [clearTime, setClearTime] = useState(0);
@@ -125,7 +131,7 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
     setPickedIdx(null);
     setIsCorrect(null);
     setSlapDir(null);
-    setTimeLeft(GAME_TIME);
+    setTimeLeft(gameTime);
     setGameOver(false);
     setStageClear(false);
     setClearTime(0);
@@ -136,7 +142,7 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
     setBurstParticles([]);
     scoreRef.current = 0;
     initRef.current = false;
-  }, []);
+  }, [gameTime]);
 
   // 카운트다운
   useEffect(() => {
@@ -325,7 +331,7 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
         if (isLastWord) {
           if (timerRef.current) clearInterval(timerRef.current);
           setStageClear(true);
-          setClearTime(GAME_TIME - timeLeft);
+          setClearTime(gameTime - timeLeft);
           setGameOver(true);
         } else {
           nextQuestion();
@@ -356,7 +362,7 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
         if (isLastWord) {
           if (timerRef.current) clearInterval(timerRef.current);
           setStageClear(true);
-          setClearTime(GAME_TIME - timeLeft);
+          setClearTime(gameTime - timeLeft);
           setGameOver(true);
         } else {
           nextQuestion();
@@ -384,7 +390,7 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
     return '★☆☆';
   };
 
-  const fusePercent = (timeLeft / GAME_TIME) * 100;
+  const fusePercent = (timeLeft / gameTime) * 100;
 
   // 카운트다운 화면
   if (countdown !== null) {
@@ -396,7 +402,7 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
           <div className="bn-progress-text">0 / {words.length}</div>
         </div>
         <div className="bn-timer-area">
-          <div className="bn-timer-display">{formatTime(GAME_TIME)}</div>
+          <div className="bn-timer-display">{formatTime(gameTime)}</div>
           <div className="bn-fuse-bar">
             <div className="bn-fuse-fill" style={{ width: '100%' }} />
             <div className="bn-fuse-fire" style={{ left: '100%' }}>🔥</div>
@@ -436,7 +442,7 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
             <div className="bn-clear-crown">👑</div>
             <div className="bn-clear-title">STAGE CLEAR!</div>
             <div className="bn-clear-stars">{getStars()}</div>
-            <div className="bn-clear-time">{formatTime(clearTime)} 만에 클리어 (제한 {formatTime(GAME_TIME)})</div>
+            <div className="bn-clear-time">{formatTime(clearTime)} 만에 클리어 (제한 {formatTime(gameTime)})</div>
             {missed.length > 0 && (
               <div className="bn-clear-missed">
                 <div className="bn-clear-missed-title">다시 볼 단어</div>

@@ -16,7 +16,10 @@ interface Props {
   onFinalTest?: () => void;
 }
 
-const GAME_TIME = 60;
+// 타이머 계산: base + sec * 단어수 (원본 HTML 공식)
+const LISTEN_BASE = 5;
+const LISTEN_SEC_PER_WORD = 6;
+const calcGameTime = (wordCount: number) => LISTEN_BASE + LISTEN_SEC_PER_WORD * wordCount;
 
 function shuffleArray<T>(array: T[]): T[] {
   const a = [...array];
@@ -96,6 +99,9 @@ function playWrongSound() {
 }
 
 export default function ListenGame({ words, allWords, dayId, onFinish, onBack, onFinalTest }: Props) {
+  // 단어 수에 따른 게임 시간 계산
+  const gameTime = calcGameTime(words.length);
+
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [rightCount, setRightCount] = useState(0);
@@ -103,7 +109,7 @@ export default function ListenGame({ words, allWords, dayId, onFinish, onBack, o
   const [done, setDone] = useState<Set<number>>(new Set());
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(GAME_TIME);
+  const [timeLeft, setTimeLeft] = useState(() => calcGameTime(words.length));
   const [gameOver, setGameOver] = useState(false);
   const [stageClear, setStageClear] = useState(false);
   const [clearTime, setClearTime] = useState(0);
@@ -263,14 +269,14 @@ export default function ListenGame({ words, allWords, dayId, onFinish, onBack, o
         // 모든 문제 완료 - 게임 종료
         if (timerRef.current) clearInterval(timerRef.current);
         setStageClear(true);
-        setClearTime(GAME_TIME - timeLeft);
+        setClearTime(gameTime - timeLeft);
         setGameOver(true);
       }
     }, isCorrect ? 700 : 1300);
   };
 
   const currentQ = questions[currentIdx];
-  const fusePercent = (timeLeft / GAME_TIME) * 100;
+  const fusePercent = (timeLeft / gameTime) * 100;
   const labels = ['A', 'B', 'C', 'D'];
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
@@ -335,7 +341,7 @@ export default function ListenGame({ words, allWords, dayId, onFinish, onBack, o
             <div className="ls-clear-crown">👑</div>
             <div className="ls-clear-title">STAGE CLEAR!</div>
             <div className="ls-clear-stars">{getStars()}</div>
-            <div className="ls-clear-time">{formatTime(clearTime)} 만에 클리어 (제한 {formatTime(GAME_TIME)})</div>
+            <div className="ls-clear-time">{formatTime(clearTime)} 만에 클리어 (제한 {formatTime(gameTime)})</div>
             <div className="ls-clear-final-msg">🎉 4개 스테이지 모두 클리어! 파이널테스트에 도전하세요</div>
             {allMissed.length > 0 && (
               <div className="ls-clear-missed">

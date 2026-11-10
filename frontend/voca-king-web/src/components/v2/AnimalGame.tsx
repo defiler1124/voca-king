@@ -16,7 +16,10 @@ interface Props {
   onNextStage?: () => void;
 }
 
-const GAME_TIME = 60;
+// 타이머 계산: base + sec * 단어수 (원본 HTML 공식)
+const ANIMAL_BASE = 10;
+const ANIMAL_SEC_PER_WORD = 6;
+const calcGameTime = (wordCount: number) => ANIMAL_BASE + ANIMAL_SEC_PER_WORD * wordCount;
 const FALL_TIME = 9;
 
 const ANIMAL_TYPES = ['bear', 'cat', 'bunny', 'panda', 'dog', 'pig'] as const;
@@ -200,13 +203,16 @@ interface FallingAnimal {
 }
 
 export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, onNextStage }: Props) {
+  // 단어 수에 따른 게임 시간 계산
+  const gameTime = calcGameTime(words.length);
+
   const [queue, setQueue] = useState<Word[]>([]);
   const [current, setCurrent] = useState<Word | null>(null);
   const [clean, setClean] = useState<Set<number>>(new Set());
   const [missed, setMissed] = useState<Word[]>([]);
   const [locked, setLocked] = useState(false);
   const [animals, setAnimals] = useState<FallingAnimal[]>([]);
-  const [timeLeft, setTimeLeft] = useState(GAME_TIME);
+  const [timeLeft, setTimeLeft] = useState(() => calcGameTime(words.length));
   const [gameOver, setGameOver] = useState(false);
   const [stageClear, setStageClear] = useState(false);
   const [clearTime, setClearTime] = useState(0);
@@ -475,7 +481,7 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
           playPopSound();
           if (timerRef.current) clearInterval(timerRef.current);
           setStageClear(true);
-          setClearTime(GAME_TIME - timeLeft);
+          setClearTime(gameTime - timeLeft);
           setGameOver(true);
         }, 500);
         return;
@@ -519,7 +525,7 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
         setTimeout(() => {
           if (timerRef.current) clearInterval(timerRef.current);
           setStageClear(true);
-          setClearTime(GAME_TIME - timeLeft);
+          setClearTime(gameTime - timeLeft);
           setGameOver(true);
         }, 1000);
         return;
@@ -533,7 +539,7 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
     }
   };
 
-  const fusePercent = (timeLeft / GAME_TIME) * 100;
+  const fusePercent = (timeLeft / gameTime) * 100;
 
   const formatTime = (sec: number) => {
     const m = Math.floor(sec / 60);
@@ -597,7 +603,7 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
               <div className="ag-clear-crown">👑</div>
               <div className="ag-clear-title">STAGE CLEAR!</div>
               <div className="ag-clear-stars">{getStars()}</div>
-              <div className="ag-clear-time">{formatTime(clearTime)} 만에 클리어 (제한 {formatTime(GAME_TIME)})</div>
+              <div className="ag-clear-time">{formatTime(clearTime)} 만에 클리어 (제한 {formatTime(gameTime)})</div>
               {missed.length > 0 && (
                 <div className="ag-clear-missed">
                   <div className="ag-clear-missed-title">다시 볼 단어</div>
