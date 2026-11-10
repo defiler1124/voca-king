@@ -358,8 +358,8 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
     if (gameOver) {
       const score = clean.size;
       const total = words.length;
-      // 완벽 클리어 시 직접 localStorage에 저장
-      if (score === total) {
+      // 시간 내 완주 시 클리어로 저장 (완벽 점수 아니어도 OK)
+      if (stageClear) {
         try {
           const saved = localStorage.getItem('voca-king-animal-cleared');
           const clearedDays: number[] = saved ? JSON.parse(saved) : [];
@@ -373,7 +373,7 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
       }
       onFinish(score, total);
     }
-  }, [gameOver, clean.size, words.length, dayId, onFinish]);
+  }, [gameOver, stageClear, clean.size, words.length, dayId, onFinish]);
 
   const handleMiss = (word: Word) => {
     if (gameOver || locked) return;

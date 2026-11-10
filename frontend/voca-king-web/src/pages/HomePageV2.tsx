@@ -208,6 +208,8 @@ export default function HomePageV2() {
         if (savedBanana) setBananaClearedDays(new Set(JSON.parse(savedBanana)));
         const savedAnimal = localStorage.getItem('voca-king-animal-cleared');
         if (savedAnimal) setAnimalClearedDays(new Set(JSON.parse(savedAnimal)));
+        const savedListen = localStorage.getItem('voca-king-listen-cleared');
+        if (savedListen) setListenClearedDays(new Set(JSON.parse(savedListen)));
       } catch { /* ignore */ }
     }
   }, [activeGame]);
@@ -230,30 +232,23 @@ export default function HomePageV2() {
     }
   }, [seenCards.size, currentDay, flashClearedDays]);
 
-  // 바나나 게임 클리어 핸들러 (완벽 클리어: score === total)
-  const handleBananaFinish = useCallback((score: number, total: number) => {
+  // 바나나 게임 클리어 핸들러 (시간 내 완주 시 클리어)
+  const handleBananaFinish = useCallback((_score: number, _total: number) => {
     // BananaGame에서 직접 localStorage에 저장하므로, 여기서는 state만 동기화
-    if (currentDay && score === total && !bananaClearedDays.has(currentDay.id)) {
-      setBananaClearedDays(prev => new Set(prev).add(currentDay.id));
-    }
-  }, [currentDay, bananaClearedDays]);
+    // activeGame이 null이 될 때 localStorage에서 다시 읽음
+  }, []);
 
-  // 동물 게임 클리어 핸들러 (완벽 클리어: score === total)
-  const handleAnimalFinish = useCallback((score: number, total: number) => {
+  // 동물 게임 클리어 핸들러 (시간 내 완주 시 클리어)
+  const handleAnimalFinish = useCallback((_score: number, _total: number) => {
     // AnimalGame에서 직접 localStorage에 저장하므로, 여기서는 state만 동기화
-    if (currentDay && score === total && !animalClearedDays.has(currentDay.id)) {
-      setAnimalClearedDays(prev => new Set(prev).add(currentDay.id));
-    }
-  }, [currentDay, animalClearedDays]);
+    // activeGame이 null이 될 때 localStorage에서 다시 읽음
+  }, []);
 
-  // 듣고 고르기 클리어 핸들러 (완벽 클리어: score === total)
-  const handleListenFinish = useCallback((score: number, total: number) => {
-    if (currentDay && score === total && !listenClearedDays.has(currentDay.id)) {
-      const newSet = new Set(listenClearedDays).add(currentDay.id);
-      setListenClearedDays(newSet);
-      localStorage.setItem('voca-king-listen-cleared', JSON.stringify([...newSet]));
-    }
-  }, [currentDay, listenClearedDays]);
+  // 듣고 고르기 클리어 핸들러 (시간 내 완주 시 클리어)
+  const handleListenFinish = useCallback((_score: number, _total: number) => {
+    // ListenGame에서 직접 localStorage에 저장하므로, 여기서는 state만 동기화
+    // activeGame이 null이 될 때 localStorage에서 다시 읽음
+  }, []);
 
   const currentLevel = levels.find((l) => l.id === currentLevelId);
   const levelIndex = levels.findIndex((l) => l.id === currentLevelId);
