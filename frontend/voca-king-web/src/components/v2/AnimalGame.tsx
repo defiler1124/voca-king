@@ -223,12 +223,17 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
   const fallTimerRef = useRef<number | null>(null);
   const fieldRef = useRef<HTMLDivElement>(null);
   const cleanRef = useRef<Set<number>>(new Set());
+  const queueRef = useRef<Word[]>([]);
   const nextQuestionRef = useRef<() => void>(() => {});
 
-  // cleanRef를 항상 최신 상태로 유지
+  // refs를 항상 최신 상태로 유지
   useEffect(() => {
     cleanRef.current = clean;
   }, [clean]);
+
+  useEffect(() => {
+    queueRef.current = queue;
+  }, [queue]);
 
   // Countdown
   useEffect(() => {
@@ -271,8 +276,9 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
     if (fallTimerRef.current) clearTimeout(fallTimerRef.current);
     if (gameOver) return;
 
-    // cleanRef.current를 사용해서 최신 상태 확인
+    // refs를 사용해서 최신 상태 확인
     const currentClean = cleanRef.current;
+    const currentQueue = queueRef.current;
 
     // 모든 단어 완료 시 게임 오버
     if (currentClean.size >= words.length) {
@@ -282,7 +288,7 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
     }
 
     // 큐가 비어있으면 남은 단어로 새로 생성
-    let q = [...queue];
+    let q = [...currentQueue];
     if (q.length === 0) {
       q = shuffleArray(words.filter(w => !currentClean.has(w.id)));
     }
@@ -394,8 +400,9 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
     setTimePen({ text: '-3초!', type: 'bad' });
     setTimeout(() => setTimePen(null), 1000);
 
-    // cleanRef 즉시 업데이트 (useEffect보다 먼저)
+    // refs 즉시 업데이트 (useEffect보다 먼저)
     cleanRef.current = new Set(cleanRef.current).add(word.id);
+    queueRef.current = queueRef.current.filter(w => w.id !== word.id);
 
     // 다음 문제로
     setTimeout(() => {
@@ -447,8 +454,11 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
         }
       }
 
-      // 정답 처리
-      const isLastWord = clean.size + 1 >= words.length;
+      // 정답 처리 + refs 즉시 업데이트
+      cleanRef.current = new Set(cleanRef.current).add(current.id);
+      queueRef.current = queueRef.current.filter(w => w.id !== current.id);
+
+      const isLastWord = cleanRef.current.size >= words.length;
       setClean(prev => new Set(prev).add(current.id));
       const newCombo = combo + 1;
       setCombo(newCombo);
@@ -485,7 +495,11 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
       if (!missed.some(m => m.id === current.id)) {
         setMissed(prev => [...prev, current]);
       }
-      setClean(prev => new Set(prev).add(current.id)); // 완료 처리 (다시 안나오게)
+
+      // refs 즉시 업데이트 + 상태 업데이트
+      cleanRef.current = new Set(cleanRef.current).add(current.id);
+      queueRef.current = queueRef.current.filter(w => w.id !== current.id);
+      setClean(prev => new Set(prev).add(current.id));
       setCombo(0); // 콤보 리셋
 
       playAngrySound();
@@ -500,7 +514,7 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
       setTimeLeft(prev => Math.max(0, prev - 3));
 
       // 마지막 단어인지 확인
-      const isLastWord = clean.size + 1 >= words.length;
+      const isLastWord = cleanRef.current.size >= words.length;
       if (isLastWord) {
         setTimeout(() => {
           if (timerRef.current) clearInterval(timerRef.current);
