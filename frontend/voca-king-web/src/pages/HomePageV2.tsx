@@ -153,6 +153,12 @@ export default function HomePageV2() {
       return saved ? new Set(JSON.parse(saved)) : new Set();
     } catch { return new Set(); }
   });
+  const [listenClearedDays, setListenClearedDays] = useState<Set<number>>(() => {
+    try {
+      const saved = localStorage.getItem('voca-king-listen-cleared');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch { return new Set(); }
+  });
 
   const dayScrollRef = useRef<HTMLDivElement>(null);
   const levelScrollRef = useRef<HTMLDivElement>(null);
@@ -210,6 +216,7 @@ export default function HomePageV2() {
   const flashCleared = currentDay ? (seenCards.size >= currentDay.words.length || flashClearedDays.has(currentDay.id)) : false;
   const bananaCleared = currentDay ? bananaClearedDays.has(currentDay.id) : false;
   const animalCleared = currentDay ? animalClearedDays.has(currentDay.id) : false;
+  const listenCleared = currentDay ? listenClearedDays.has(currentDay.id) : false;
 
   // 모든 카드를 보면 클리어 상태 저장 + 다시하기 모드 해제
   useEffect(() => {
@@ -238,6 +245,15 @@ export default function HomePageV2() {
       setAnimalClearedDays(prev => new Set(prev).add(currentDay.id));
     }
   }, [currentDay, animalClearedDays]);
+
+  // 듣고 고르기 클리어 핸들러 (완벽 클리어: score === total)
+  const handleListenFinish = useCallback((score: number, total: number) => {
+    if (currentDay && score === total && !listenClearedDays.has(currentDay.id)) {
+      const newSet = new Set(listenClearedDays).add(currentDay.id);
+      setListenClearedDays(newSet);
+      localStorage.setItem('voca-king-listen-cleared', JSON.stringify([...newSet]));
+    }
+  }, [currentDay, listenClearedDays]);
 
   const currentLevel = levels.find((l) => l.id === currentLevelId);
   const levelIndex = levels.findIndex((l) => l.id === currentLevelId);
@@ -423,7 +439,8 @@ export default function HomePageV2() {
             {GAME_STAGES.map((stage) => {
               const isCleared = (stage.id === 'flash' && flashCleared) ||
                                 (stage.id === 'match' && bananaCleared) ||
-                                (stage.id === 'pop' && animalCleared);
+                                (stage.id === 'pop' && animalCleared) ||
+                                (stage.id === 'listen' && listenCleared);
               // 이미 클리어한 스테이지는 절대 잠기지 않음
               const isLocked = !isCleared && (
                                (stage.id === 'match' && !flashCleared) ||
@@ -534,7 +551,7 @@ export default function HomePageV2() {
           words={currentDay.words}
           allWords={allWordsInLevel}
           dayId={currentDay.id}
-          onFinish={(_score, _total) => {}}
+          onFinish={handleListenFinish}
           onBack={() => setActiveGame(null)}
           onFinalTest={() => { setActiveGame(null); setViewMode('final'); }}
         />
