@@ -422,15 +422,10 @@ export default function HomePageV2() {
               <div className="v2-flash-clear-msg">모든 카드를 확인했어요! 시간 제한 없이 편하게 복습했어요.</div>
               <div className="v2-flash-clear-btns">
                 <button className="v2-flash-clear-btn secondary" onClick={() => {
+                  // 다시 하기: 카드 상태만 초기화, 클리어 기록은 유지 (바나나게임 잠금 방지)
                   setSeenCards(new Set());
                   setFlashIndex(0);
                   setShowKorean(false);
-                  if (currentDay) {
-                    const newSet = new Set(flashClearedDays);
-                    newSet.delete(currentDay.id);
-                    setFlashClearedDays(newSet);
-                    localStorage.setItem('voca-king-flash-cleared', JSON.stringify([...newSet]));
-                  }
                 }}>다시 하기</button>
                 <button className="v2-flash-clear-btn primary" onClick={() => setActiveGame('match')}>다음 스테이지 ▶</button>
                 <button className="v2-flash-clear-btn secondary" onClick={() => setActiveGame(null)}>목록</button>
