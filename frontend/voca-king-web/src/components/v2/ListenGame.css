@@ -84,6 +84,7 @@
 .ls-fuse-fill {
   position: absolute;
   top: 0;
+  left: auto;
   right: 0;
   bottom: 0;
   background: repeating-linear-gradient(
