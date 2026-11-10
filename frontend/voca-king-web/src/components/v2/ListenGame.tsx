@@ -307,12 +307,9 @@ export default function ListenGame({ words, allWords, dayId, onFinish, onBack, o
           {timePen && <div className={`ls-time-pen ${timePen.type}`} style={{ left: `${100 - fusePercent}%` }}>{timePen.text}</div>}
           <div className="ls-fuse-bomb">💣</div>
         </div>
+        {/* 콤보 - 타이머 오른쪽에 표시 */}
+        <div className="ls-combo-area">{combo >= 2 && gameStarted && countdown === null ? `🔥 ${combo}연속!` : ''}</div>
       </div>
-
-      {/* 콤보 표시 */}
-      {combo >= 2 && !gameOver && gameStarted && countdown === null && (
-        <div className="ls-combo">🔥 {combo}연속!</div>
-      )}
 
       {/* Ready Screen */}
       {showReady && (

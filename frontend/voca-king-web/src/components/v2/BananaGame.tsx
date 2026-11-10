@@ -353,12 +353,9 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
             {timePen && <div className={`bn-time-pen ${timePen.type}`} style={{ left: `${100 - fusePercent}%` }}>{timePen.text}</div>}
             <div className="bn-fuse-bomb">💣</div>
           </div>
+          {/* 콤보 - 타이머 오른쪽에 표시 */}
+          <div className="bn-combo-area">{combo >= 2 ? `🔥 ${combo}연속!` : ''}</div>
         </div>
-
-        {/* 콤보 표시 */}
-        {combo >= 2 && !gameOver && (
-          <div className="bn-combo">🔥 {combo}연속!</div>
-        )}
 
         {stageClear ? (
           <div className="bn-clear">
@@ -420,7 +417,6 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
       {/* 바나나 점수 */}
       <div className="bn-score-row">
         <span className="bn-banana-count">🍌 {banana}</span>
-        {combo >= 2 && <span className="bn-combo">🔥 {combo}연속!</span>}
       </div>
 
       {/* 단어 카드 */}

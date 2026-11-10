@@ -512,12 +512,9 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
             {timePen && <div className={`ag-time-pen ${timePen.type}`} style={{ left: `${100 - fusePercent}%` }}>{timePen.text}</div>}
             <div className="ag-fuse-bomb">💣</div>
           </div>
+          {/* 콤보 - 타이머 오른쪽에 표시 */}
+          <div className="ag-combo-area">{combo >= 2 && countdown === null ? `🔥 ${combo}연속!` : ''}</div>
         </div>
-      )}
-
-      {/* 콤보 표시 */}
-      {combo >= 2 && !gameOver && countdown === null && (
-        <div className="ag-combo">🔥 {combo}연속!</div>
       )}
 
       {/* Countdown */}
