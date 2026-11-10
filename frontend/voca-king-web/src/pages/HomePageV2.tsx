@@ -382,12 +382,14 @@ export default function HomePageV2() {
           <div className="v2-hub-head"><div className="v2-hub-title">SELF TEST</div></div>
           <div className="v2-hub-grid">
             {GAME_STAGES.map((stage) => {
-              const isLocked = (stage.id === 'match' && !flashCleared) ||
-                               (stage.id === 'pop' && !bananaCleared) ||
-                               (stage.id === 'listen' && !animalCleared);
               const isCleared = (stage.id === 'flash' && flashCleared) ||
                                 (stage.id === 'match' && bananaCleared) ||
                                 (stage.id === 'pop' && animalCleared);
+              // 이미 클리어한 스테이지는 절대 잠기지 않음
+              const isLocked = !isCleared && (
+                               (stage.id === 'match' && !flashCleared) ||
+                               (stage.id === 'pop' && !bananaCleared) ||
+                               (stage.id === 'listen' && !animalCleared));
               return (
                 <button
                   key={stage.id}
