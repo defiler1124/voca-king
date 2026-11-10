@@ -108,6 +108,36 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
   const scoreRef = useRef(0);
   const burstIdRef = useRef(0);
 
+  // 게임 재시작
+  const restartGame = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    setQueue([]);
+    setCurrent(null);
+    setClean(new Set());
+    setMissed([]);
+    setBanana(0);
+    setCombo(0);
+    setLocked(true);
+    setOptions(['', '']);
+    setCorrectIdx(0);
+    setMood('idle');
+    setDropReady(false);
+    setPickedIdx(null);
+    setIsCorrect(null);
+    setSlapDir(null);
+    setTimeLeft(GAME_TIME);
+    setGameOver(false);
+    setStageClear(false);
+    setClearTime(0);
+    setThrowStyle({});
+    setTimePen(null);
+    setCountdown(3);
+    setGameStarted(false);
+    setBurstParticles([]);
+    scoreRef.current = 0;
+    initRef.current = false;
+  }, []);
+
   // 카운트다운
   useEffect(() => {
     if (countdown === null) return;
@@ -418,7 +448,7 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
               </div>
             )}
             <div className="bn-clear-btns">
-              <button className="bn-clear-btn secondary" onClick={() => window.location.reload()}>다시 하기</button>
+              <button className="bn-clear-btn secondary" onClick={restartGame}>다시 하기</button>
               <button className="bn-clear-btn primary" onClick={onNextStage || onBack}>다음 스테이지 ▶</button>
               <button className="bn-clear-btn secondary" onClick={onBack}>목록</button>
             </div>
