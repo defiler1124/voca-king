@@ -449,7 +449,6 @@ export default function HomePageV2() {
                   onClick={() => !isLocked && setActiveGame(stage.id)}
                   disabled={isLocked}
                 >
-                  {isLocked && <div className="lock-icon">🔒</div>}
                   <div className="stage-icon"><IconComponent /></div>
                   <div className="no">STAGE {stage.no}</div>
                   <div className="name">{stage.name}</div>
