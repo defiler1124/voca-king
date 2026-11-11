@@ -652,7 +652,7 @@ export default function AnimalGame({ words, allWords, dayId, onFinish, onBack, o
                   key={`${questionId}-${idx}`}
                   className={`ag-animal ${animal.status}`}
                   style={{
-                    left: `${15 + animal.slot * 22}%`,
+                    left: `${12.5 + animal.slot * 25}%`,
                     animationDuration: `${animal.duration}s`,
                   }}
                   onClick={() => handlePick(idx)}

@@ -240,8 +240,8 @@
 .ag-animal {
   position: absolute;
   top: -150px;
-  width: 17%;
-  max-width: 85px;
+  width: 20%;
+  max-width: 90px;
   border: none;
   background: none;
   padding: 0;
@@ -249,6 +249,7 @@
   display: block;
   animation: ag-fall linear forwards;
   z-index: 1;
+  transform: translateX(-50%);
 }
 
 @keyframes ag-fall {
@@ -311,20 +312,23 @@
 /* Word tag */
 .ag-animal-tag {
   margin-top: -8px;
-  padding: 6px 10px;
+  padding: 5px 6px;
   background: linear-gradient(180deg, #fff, #f1f8ff);
   border: 2px solid #fff;
-  border-radius: 12px;
-  font-size: 15px;
+  border-radius: 10px;
+  font-size: 14px;
   font-weight: 800;
   color: #14405c;
   text-align: center;
   box-shadow: 0 3px 6px rgba(0,0,0,0.15);
-  word-break: keep-all;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
-.ag-animal-tag.sm { font-size: 13px; }
-.ag-animal-tag.xs { font-size: 11px; }
+.ag-animal-tag.sm { font-size: 12px; padding: 4px 5px; }
+.ag-animal-tag.xs { font-size: 10px; padding: 3px 4px; }
 
 /* Rage icon */
 .ag-rage {
