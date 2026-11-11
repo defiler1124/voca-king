@@ -460,7 +460,7 @@
 .v2-hub-card .no {
   grid-column: 2;
   grid-row: 1;
-  font-size: 0.72em;
+  font-size: 0.66em;
   font-weight: 800;
   color: #5a6a80;
   letter-spacing: 1.5px;
@@ -470,10 +470,11 @@
   grid-column: 2;
   grid-row: 2;
   font-family: 'Baloo 2', 'Noto Sans KR', sans-serif;
-  font-size: 1.2em;
+  font-size: 1.02em;
   font-weight: 900;
   color: #1f2a3a;
   margin-top: 2px;
+  white-space: nowrap;
 }
 
 .v2-hub-card .clear-status {
