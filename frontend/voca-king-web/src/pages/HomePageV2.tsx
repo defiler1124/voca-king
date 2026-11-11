@@ -453,7 +453,9 @@ export default function HomePageV2() {
                   <div className="stage-icon"><IconComponent /></div>
                   <div className="no">STAGE {stage.no}</div>
                   <div className="name">{stage.name}</div>
-                  <div className="clear-status">{isCleared ? '✔ 클리어' : ''}</div>
+                  <div className="clear-status">
+                    {isCleared ? '✔ 클리어' : isLocked ? '🔒 앞 단계를 먼저 클리어하세요' : ''}
+                  </div>
                 </button>
               );
             })}

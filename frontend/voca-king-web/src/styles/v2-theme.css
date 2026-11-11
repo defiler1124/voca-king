@@ -497,9 +497,14 @@
 .v2-t-listen { background-color: #c6eef3; }
 
 .v2-hub-card.locked {
-  opacity: 0.5;
+  opacity: 0.55;
   cursor: not-allowed;
-  filter: grayscale(0.5);
+  filter: grayscale(0.7);
+}
+
+.v2-hub-card.locked .clear-status {
+  color: #5a6a80;
+  font-size: 0.68em;
 }
 
 .v2-hub-card.locked:active {
