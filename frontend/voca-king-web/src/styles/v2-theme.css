@@ -405,13 +405,14 @@
 
 .v2-hub-desc {
   text-align: center;
-  padding: 14px 20px;
+  padding: 10px 16px;
   margin-bottom: 12px;
   background: rgba(255,255,255,0.85);
-  border-radius: 24px;
-  font-size: 0.95em;
+  border-radius: 18px;
+  font-size: 0.76em;
   font-weight: 600;
   color: #4a5568;
+  line-height: 1.5;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
