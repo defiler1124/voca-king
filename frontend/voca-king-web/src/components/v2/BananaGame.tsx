@@ -338,7 +338,7 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
         }
       }, 900);
     } else {
-      // 오답: missed에 추가하고 다음 문제로
+      // 오답: missed에 추가하지만, 정답 맞출 때까지 다음으로 안 넘어감
       playWrongSound();
       setSlapDir(idx === 0 ? 'l' : 'r');
       setMood('angry');
@@ -349,24 +349,18 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
       setTimePen({ text: '-2초!', type: 'bad' });
       setTimeout(() => setTimePen(null), 1000);
 
+      // missed에 추가 (중복 방지)
       if (!missed.some(m => m.id === current.id)) {
         setMissed(prev => [...prev, current]);
       }
-      setClean(prev => new Set(prev).add(current.id)); // 완료 처리
 
-      const isLastWord = clean.size + 1 >= words.length;
-
+      // 틀린 바나나만 날리고, 정답 바나나는 유지 → 다시 선택 가능
       setTimeout(() => {
         setMood('idle');
         setSlapDir(null);
-        if (isLastWord) {
-          if (timerRef.current) clearInterval(timerRef.current);
-          setStageClear(true);
-          setClearTime(gameTime - timeLeft);
-          setGameOver(true);
-        } else {
-          nextQuestion();
-        }
+        setPickedIdx(null);
+        setIsCorrect(null);
+        setLocked(false); // 다시 선택 가능하게
       }, 800);
     }
   };
