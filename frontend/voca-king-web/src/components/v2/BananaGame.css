@@ -305,6 +305,11 @@
   100% { transform: translate(calc(var(--throw-dx, 0) + var(--slap-x, 150px)), calc(var(--throw-dy, 100px) - 150px)) rotate(1200deg) scale(0.3); opacity: 0; }
 }
 
+.bn-banana.hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .bn-banana-img {
   display: block;
   width: 100%;

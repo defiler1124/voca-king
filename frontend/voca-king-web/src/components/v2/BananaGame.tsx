@@ -96,6 +96,7 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
   const [pickedIdx, setPickedIdx] = useState<number | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [slapDir, setSlapDir] = useState<'l' | 'r' | null>(null);
+  const [slappedIdx, setSlappedIdx] = useState<number | null>(null); // 틀린 바나나 숨김용
   const [timeLeft, setTimeLeft] = useState(() => calcGameTime(words.length));
   const [gameOver, setGameOver] = useState(false);
   const [stageClear, setStageClear] = useState(false);
@@ -131,6 +132,7 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
     setPickedIdx(null);
     setIsCorrect(null);
     setSlapDir(null);
+    setSlappedIdx(null);
     setTimeLeft(gameTime);
     setGameOver(false);
     setStageClear(false);
@@ -200,6 +202,7 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
     setPickedIdx(null);
     setIsCorrect(null);
     setSlapDir(null);
+    setSlappedIdx(null);
     setDropReady(false);
     setThrowStyle({});
 
@@ -358,6 +361,7 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
       setTimeout(() => {
         setMood('idle');
         setSlapDir(null);
+        setSlappedIdx(idx); // 틀린 바나나 숨김
         setPickedIdx(null);
         setIsCorrect(null);
         setLocked(false); // 다시 선택 가능하게
@@ -512,9 +516,9 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
             <button
               key={idx}
               ref={el => { bananaRefs.current[idx] = el; }}
-              className={`bn-banana ${dropReady ? 'drop' : ''} ${pickedIdx === idx ? (isCorrect ? 'throw' : 'slapped') : ''}`}
+              className={`bn-banana ${dropReady ? 'drop' : ''} ${pickedIdx === idx ? (isCorrect ? 'throw' : 'slapped') : ''} ${slappedIdx === idx ? 'hidden' : ''}`}
               onClick={() => handlePick(idx)}
-              disabled={locked}
+              disabled={locked || slappedIdx === idx}
               style={pickedIdx === idx ? throwStyle : undefined}
             >
               <BananaSVG />
