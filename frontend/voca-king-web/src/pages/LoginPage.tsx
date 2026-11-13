@@ -348,7 +348,8 @@ export default function LoginPage() {
 
       {/* 푸터 */}
       <div style={{
-        marginTop: '28px',
+        marginTop: '24px',
+        marginBottom: '80px',
         textAlign: 'center',
         color: '#fff',
         fontSize: '12px',
@@ -366,7 +367,7 @@ export default function LoginPage() {
         bottom: 0,
         left: 0,
         right: 0,
-        height: '60px',
+        height: '50px',
         background: 'linear-gradient(180deg, #5cb340 0%, #4a9930 100%)',
         borderTop: '4px solid #3d8028'
       }} />
