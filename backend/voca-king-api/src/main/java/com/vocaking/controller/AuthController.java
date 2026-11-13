@@ -59,4 +59,42 @@ public class AuthController {
         UserResponse response = authService.getCurrentUser(userDetails.getUsername());
         return ResponseEntity.ok(response);
     }
+
+    /**
+     * 모든 사용자 목록 조회 (관리자용)
+     *
+     * GET /api/auth/users
+     */
+    @Operation(summary = "사용자 목록 조회", description = "모든 사용자 목록을 조회합니다 (관리자 전용)")
+    @GetMapping("/users")
+    public ResponseEntity<java.util.List<UserResponse>> getAllUsers() {
+        java.util.List<UserResponse> users = authService.getAllUsers();
+        return ResponseEntity.ok(users);
+    }
+
+    /**
+     * 사용자 비밀번호 변경 (관리자용)
+     *
+     * PUT /api/auth/users/{userId}/password
+     */
+    @Operation(summary = "사용자 비밀번호 변경", description = "사용자의 비밀번호를 변경합니다 (관리자 전용)")
+    @PutMapping("/users/{userId}/password")
+    public ResponseEntity<UserResponse> changeUserPassword(
+            @PathVariable Long userId,
+            @Valid @RequestBody AdminChangePasswordRequest request) {
+        UserResponse response = authService.changeUserPassword(userId, request.getNewPassword());
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 사용자 삭제 (관리자용)
+     *
+     * DELETE /api/auth/users/{userId}
+     */
+    @Operation(summary = "사용자 삭제", description = "사용자를 삭제합니다 (관리자 전용)")
+    @DeleteMapping("/users/{userId}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
+        authService.deleteUser(userId);
+        return ResponseEntity.ok().build();
+    }
 }

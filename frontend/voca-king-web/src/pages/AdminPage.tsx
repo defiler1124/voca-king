@@ -21,6 +21,7 @@ import {
   changeUserRole,
   updateUser,
   deleteUser,
+  changeUserPassword,
   getAllUserStats,
   getUserDetailStats,
   getOverallStats,
@@ -67,6 +68,7 @@ export default function AdminPage() {
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   const [showUserModal, setShowUserModal] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
 
   // 학습 통계 상태
   const [userStats, setUserStats] = useState<UserStats[]>([]);
@@ -163,6 +165,10 @@ export default function AdminPage() {
 
   const handleUpdateUser = async () => {
     if (!editingUser) return;
+    if (newPassword && newPassword.length < 6) {
+      alert('비밀번호는 6자 이상이어야 합니다.');
+      return;
+    }
     setIsSubmitting(true);
     try {
       // 이름/아이디 수정
@@ -172,9 +178,15 @@ export default function AdminPage() {
       if (originalUser && originalUser.role !== editingUser.role) {
         await changeUserRole(editingUser.id, editingUser.role as 'ADMIN' | 'STUDENT');
       }
+      // 비밀번호 변경 (입력한 경우)
+      if (newPassword) {
+        await changeUserPassword(editingUser.id, newPassword);
+      }
       setEditingUser(null);
       setShowUserModal(false);
+      setNewPassword('');
       loadUsers();
+      alert('회원 정보가 수정되었습니다.');
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
       alert(err.response?.data?.message || '사용자 수정에 실패했습니다.');
@@ -1269,16 +1281,31 @@ export default function AdminPage() {
                 <option value="ADMIN">관리자</option>
               </select>
             </div>
+            <div style={{ marginBottom: '16px', padding: '16px', background: '#fff8e1', borderRadius: '10px', border: '2px solid #ffd54f' }}>
+              <label style={{ display: 'block', marginBottom: '6px', fontSize: '13px', fontWeight: 600, color: '#f57c00' }}>
+                새 비밀번호 (변경 시에만 입력)
+              </label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="비밀번호를 변경하려면 입력하세요"
+                style={{ width: '100%', padding: '12px 16px', border: '2px solid #ffd54f', borderRadius: '10px', fontSize: '14px', outline: 'none', boxSizing: 'border-box', background: '#fff' }}
+              />
+              {newPassword && newPassword.length < 6 && (
+                <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#f44336' }}>비밀번호는 6자 이상이어야 합니다</p>
+              )}
+            </div>
             <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
               <button
-                onClick={() => { setShowUserModal(false); setEditingUser(null); }}
+                onClick={() => { setShowUserModal(false); setEditingUser(null); setNewPassword(''); }}
                 style={{ flex: 1, padding: '14px', background: '#f0f0f0', border: 'none', borderRadius: '10px', color: '#666', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}
               >
                 취소
               </button>
               <button
                 onClick={handleUpdateUser}
-                disabled={isSubmitting}
+                disabled={isSubmitting || (newPassword.length > 0 && newPassword.length < 6)}
                 style={{ flex: 1, padding: '14px', background: 'linear-gradient(135deg, #9B59B6, #B07CC6)', border: 'none', borderRadius: '10px', color: '#fff', fontSize: '14px', fontWeight: 600, cursor: 'pointer', opacity: isSubmitting ? 0.5 : 1 }}
               >
                 저장

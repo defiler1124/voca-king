@@ -86,4 +86,48 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다"));
         return UserResponse.from(user);
     }
+
+    /**
+     * 모든 사용자 목록 조회 (관리자용)
+     *
+     * @return 사용자 목록
+     */
+    @Transactional(readOnly = true)
+    public java.util.List<UserResponse> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(UserResponse::from)
+                .toList();
+    }
+
+    /**
+     * 사용자 비밀번호 변경 (관리자용)
+     *
+     * @param userId 사용자 ID
+     * @param newPassword 새 비밀번호
+     * @return 변경된 사용자 정보
+     */
+    public UserResponse changeUserPassword(Long userId, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다"));
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        User savedUser = userRepository.save(user);
+        return UserResponse.from(savedUser);
+    }
+
+    /**
+     * 사용자 삭제 (관리자용)
+     *
+     * @param userId 사용자 ID
+     */
+    public void deleteUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다"));
+
+        if (user.getRole() == User.Role.ADMIN) {
+            throw new IllegalArgumentException("관리자 계정은 삭제할 수 없습니다");
+        }
+
+        userRepository.delete(user);
+    }
 }

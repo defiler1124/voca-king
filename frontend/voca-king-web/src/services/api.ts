@@ -65,6 +65,25 @@ export const getCurrentUser = async (): Promise<User> => {
   return response.data;
 };
 
+// ==================== 회원 관리 API (관리자용) ====================
+
+/** 모든 사용자 목록 조회 */
+export const getAllUsers = async (): Promise<User[]> => {
+  const response = await api.get<User[]>('/auth/users');
+  return response.data;
+};
+
+/** 사용자 비밀번호 변경 */
+export const changeUserPassword = async (userId: number, newPassword: string): Promise<User> => {
+  const response = await api.put<User>(`/auth/users/${userId}/password`, { newPassword });
+  return response.data;
+};
+
+/** 사용자 삭제 */
+export const deleteUser = async (userId: number): Promise<void> => {
+  await api.delete(`/auth/users/${userId}`);
+};
+
 // ==================== 레벨 API ====================
 
 /** 모든 레벨 조회 */

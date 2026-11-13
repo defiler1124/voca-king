@@ -87,6 +87,7 @@ public class AuthDto {
         private String username;
         private String name;
         private String role;
+        private Boolean active;
 
         public static UserResponse from(User user) {
             return UserResponse.builder()
@@ -94,7 +95,21 @@ public class AuthDto {
                     .username(user.getUsername())
                     .name(user.getName())
                     .role(user.getRole().name())
+                    .active(user.getActive())
                     .build();
         }
+    }
+
+    /**
+     * 관리자용 비밀번호 변경 요청 DTO
+     */
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AdminChangePasswordRequest {
+        @NotBlank(message = "새 비밀번호는 필수입니다")
+        @Size(min = 6, max = 20, message = "비밀번호는 6~20자여야 합니다")
+        private String newPassword;
     }
 }
