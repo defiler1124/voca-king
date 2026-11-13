@@ -97,6 +97,7 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [slapDir, setSlapDir] = useState<'l' | 'r' | null>(null);
   const [slappedIdx, setSlappedIdx] = useState<number | null>(null); // 틀린 바나나 숨김용
+  const [alreadyWrong, setAlreadyWrong] = useState(false); // 이미 오답 선택했는지 (정답 점수 안 줌)
   const [timeLeft, setTimeLeft] = useState(() => calcGameTime(words.length));
   const [gameOver, setGameOver] = useState(false);
   const [stageClear, setStageClear] = useState(false);
@@ -133,6 +134,7 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
     setIsCorrect(null);
     setSlapDir(null);
     setSlappedIdx(null);
+    setAlreadyWrong(false);
     setTimeLeft(gameTime);
     setGameOver(false);
     setStageClear(false);
@@ -203,6 +205,7 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
     setIsCorrect(null);
     setSlapDir(null);
     setSlappedIdx(null);
+    setAlreadyWrong(false);
     setDropReady(false);
     setThrowStyle({});
 
@@ -307,26 +310,35 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
     }
 
     if (ok) {
-      // 정답
+      // 정답 바나나 선택
+      const isFirstTry = !alreadyWrong; // 첫 시도에 맞췄는지
+
       playCorrectSound();
       setMood('eat');
       setTimeout(() => {
         setMood('happy');
-        triggerBurst();
+        if (isFirstTry) triggerBurst(); // 첫 시도 정답만 폭죽
       }, 400);
 
       const isLastWord = clean.size + 1 >= words.length;
       setClean(prev => new Set(prev).add(current.id));
-      const newCombo = combo + 1;
-      setCombo(newCombo);
-      scoreRef.current += 1;
-      setBanana(prev => prev + 1);
 
-      // 5연속 정답 보너스: +3초
-      if (newCombo > 0 && newCombo % 5 === 0) {
-        setTimeLeft(prev => prev + 3);
-        setTimePen({ text: '+3초!', type: 'good' });
-        setTimeout(() => setTimePen(null), 1000);
+      // 첫 시도에 맞춘 경우만 점수 증가
+      if (isFirstTry) {
+        const newCombo = combo + 1;
+        setCombo(newCombo);
+        scoreRef.current += 1;
+        setBanana(prev => prev + 1);
+
+        // 5연속 정답 보너스: +3초
+        if (newCombo > 0 && newCombo % 5 === 0) {
+          setTimeLeft(prev => prev + 3);
+          setTimePen({ text: '+3초!', type: 'good' });
+          setTimeout(() => setTimePen(null), 1000);
+        }
+      } else {
+        // 이미 틀린 문제는 콤보 리셋 유지, 점수 없음
+        setCombo(0);
       }
 
       setTimeout(() => {
@@ -346,6 +358,7 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
       setSlapDir(idx === 0 ? 'l' : 'r');
       setMood('angry');
       setCombo(0);
+      setAlreadyWrong(true); // 이 문제는 틀린 문제로 처리
 
       // 오답 페널티: -2초
       setTimeLeft(prev => Math.max(0, prev - 2));
