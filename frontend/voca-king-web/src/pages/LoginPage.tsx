@@ -1,9 +1,10 @@
 /**
- * 로그인 페이지 - 세련된 디자인
+ * 로그인 페이지 - V2 숲/지도 테마
  */
 import { useState, useEffect, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
+import '../styles/v2-theme.css';
 
 const REMEMBER_KEY = 'voca_king_remember';
 
@@ -11,6 +12,7 @@ export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [focusField, setFocusField] = useState<string | null>(null);
   const { login, isLoading, error, clearError } = useAuthStore();
   const navigate = useNavigate();
 
@@ -50,8 +52,7 @@ export default function LoginPage() {
         navigate('/');
       }
     } catch {
-      // 에러는 스토어에서 처리 - 여기서 아무것도 안함
-      // 에러가 있으면 페이지에 머물러야 함
+      // 에러는 스토어에서 처리
     }
   };
 
@@ -69,25 +70,76 @@ export default function LoginPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #1B2A5B 0%, #2D3E7D 50%, #1B2A5B 100%)',
+      background: 'linear-gradient(180deg, #4a9f38 0%, #7fd04a 40%, #a8e063 100%)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '20px'
+      padding: '20px',
+      fontFamily: "'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif",
+      position: 'relative',
+      overflow: 'hidden'
     }}>
+      {/* 배경 장식 */}
+      <div style={{
+        position: 'absolute',
+        top: '10%',
+        left: '5%',
+        fontSize: '60px',
+        opacity: 0.15,
+        transform: 'rotate(-15deg)'
+      }}>🌳</div>
+      <div style={{
+        position: 'absolute',
+        top: '20%',
+        right: '8%',
+        fontSize: '50px',
+        opacity: 0.15,
+        transform: 'rotate(10deg)'
+      }}>🌲</div>
+      <div style={{
+        position: 'absolute',
+        bottom: '15%',
+        left: '10%',
+        fontSize: '45px',
+        opacity: 0.15,
+        transform: 'rotate(5deg)'
+      }}>🍃</div>
+      <div style={{
+        position: 'absolute',
+        bottom: '25%',
+        right: '5%',
+        fontSize: '55px',
+        opacity: 0.15,
+        transform: 'rotate(-10deg)'
+      }}>🌿</div>
+
       {/* 로고 영역 */}
-      <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '24px', position: 'relative', zIndex: 1 }}>
         <div style={{
-          fontSize: '42px',
-          fontWeight: 900,
-          color: '#fff',
-          letterSpacing: '2px',
-          marginBottom: '8px'
+          fontSize: '52px',
+          marginBottom: '8px',
+          filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))'
         }}>
-          VOCA <span style={{ color: '#FFCA57' }}>KING</span> 👑
+          👑
         </div>
-        <p style={{ color: '#AEB8DE', fontSize: '14px' }}>
+        <div style={{
+          fontFamily: "'Baloo 2', 'Noto Sans KR', sans-serif",
+          fontSize: '36px',
+          fontWeight: 800,
+          color: '#fff',
+          textShadow: '0 3px 0 #2b7a1f, 2px 2px 0 #2b7a1f, -2px 2px 0 #2b7a1f, 0 0 10px rgba(0,0,0,0.2)',
+          letterSpacing: '2px'
+        }}>
+          VOCA KING
+        </div>
+        <p style={{
+          color: '#fff',
+          fontSize: '14px',
+          fontWeight: 600,
+          textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+          marginTop: '4px'
+        }}>
           영어 단어 마스터의 시작
         </p>
       </div>
@@ -95,44 +147,57 @@ export default function LoginPage() {
       {/* 로그인 카드 */}
       <div style={{
         width: '100%',
-        maxWidth: '400px',
-        background: '#fff',
+        maxWidth: '380px',
+        background: '#fffdf3',
         borderRadius: '24px',
-        padding: '40px 32px',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+        padding: '32px 28px',
+        boxShadow: '0 8px 0 #5b3a1e, 0 12px 40px rgba(0,0,0,0.15)',
+        border: '4px solid #5b3a1e',
+        position: 'relative',
+        zIndex: 1
       }}>
-        <h2 style={{
-          textAlign: 'center',
-          fontSize: '24px',
+        {/* 카드 상단 장식 */}
+        <div style={{
+          position: 'absolute',
+          top: '-18px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: '#ff8a1d',
+          color: '#fff',
+          padding: '6px 20px',
+          borderRadius: '20px',
+          fontSize: '14px',
           fontWeight: 800,
-          color: '#1B2A5B',
-          marginBottom: '32px'
+          boxShadow: '0 3px 0 #c46a10',
+          border: '3px solid #5b3a1e'
         }}>
           로그인
-        </h2>
+        </div>
 
         {error && (
           <div style={{
-            background: '#FFEBEE',
-            color: '#C62828',
+            background: '#ffebee',
+            color: '#c62828',
             padding: '12px 16px',
             borderRadius: '12px',
-            marginBottom: '24px',
+            marginTop: '8px',
+            marginBottom: '20px',
             fontSize: '14px',
             textAlign: 'center',
-            fontWeight: 500
+            fontWeight: 600,
+            border: '2px solid #ef9a9a'
           }}>
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '20px' }}>
+        <form onSubmit={handleSubmit} style={{ marginTop: '16px' }}>
+          <div style={{ marginBottom: '18px' }}>
             <label style={{
               display: 'block',
               fontSize: '13px',
-              fontWeight: 600,
-              color: '#666',
+              fontWeight: 700,
+              color: '#5b3a1e',
               marginBottom: '8px'
             }}>
               아이디
@@ -141,29 +206,32 @@ export default function LoginPage() {
               type="text"
               value={username}
               onChange={handleUsernameChange}
+              onFocus={() => setFocusField('username')}
+              onBlur={() => setFocusField(null)}
               style={{
                 width: '100%',
                 padding: '14px 16px',
-                border: '2px solid #e0e0e0',
-                borderRadius: '12px',
+                border: `3px solid ${focusField === 'username' ? '#33a852' : '#d4c4a8'}`,
+                borderRadius: '14px',
                 fontSize: '15px',
+                fontWeight: 500,
                 outline: 'none',
-                transition: 'border-color 0.2s',
-                boxSizing: 'border-box'
+                transition: 'border-color 0.2s, box-shadow 0.2s',
+                boxSizing: 'border-box',
+                background: '#fff',
+                boxShadow: focusField === 'username' ? '0 0 0 3px rgba(51,168,82,0.2)' : 'none'
               }}
-              onFocus={(e) => e.target.style.borderColor = '#1B2A5B'}
-              onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
               placeholder="아이디를 입력하세요"
               required
             />
           </div>
 
-          <div style={{ marginBottom: '20px' }}>
+          <div style={{ marginBottom: '18px' }}>
             <label style={{
               display: 'block',
               fontSize: '13px',
-              fontWeight: 600,
-              color: '#666',
+              fontWeight: 700,
+              color: '#5b3a1e',
               marginBottom: '8px'
             }}>
               비밀번호
@@ -172,18 +240,21 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={handlePasswordChange}
+              onFocus={() => setFocusField('password')}
+              onBlur={() => setFocusField(null)}
               style={{
                 width: '100%',
                 padding: '14px 16px',
-                border: '2px solid #e0e0e0',
-                borderRadius: '12px',
+                border: `3px solid ${focusField === 'password' ? '#33a852' : '#d4c4a8'}`,
+                borderRadius: '14px',
                 fontSize: '15px',
+                fontWeight: 500,
                 outline: 'none',
-                transition: 'border-color 0.2s',
-                boxSizing: 'border-box'
+                transition: 'border-color 0.2s, box-shadow 0.2s',
+                boxSizing: 'border-box',
+                background: '#fff',
+                boxShadow: focusField === 'password' ? '0 0 0 3px rgba(51,168,82,0.2)' : 'none'
               }}
-              onFocus={(e) => e.target.style.borderColor = '#1B2A5B'}
-              onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
               placeholder="비밀번호를 입력하세요"
               required
             />
@@ -196,7 +267,8 @@ export default function LoginPage() {
               alignItems: 'center',
               cursor: 'pointer',
               fontSize: '14px',
-              color: '#666',
+              color: '#5b3a1e',
+              fontWeight: 600,
               userSelect: 'none'
             }}>
               <input
@@ -204,10 +276,10 @@ export default function LoginPage() {
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
                 style={{
-                  width: '18px',
-                  height: '18px',
-                  marginRight: '8px',
-                  accentColor: '#1B2A5B',
+                  width: '20px',
+                  height: '20px',
+                  marginRight: '10px',
+                  accentColor: '#33a852',
                   cursor: 'pointer'
                 }}
               />
@@ -221,37 +293,50 @@ export default function LoginPage() {
             style={{
               width: '100%',
               padding: '16px',
-              background: isLoading ? '#999' : 'linear-gradient(135deg, #D32F3F 0%, #C22B76 100%)',
+              background: isLoading ? '#aaa' : 'linear-gradient(180deg, #4CAF50 0%, #33a852 100%)',
               color: '#fff',
-              border: 'none',
-              borderRadius: '12px',
-              fontSize: '16px',
-              fontWeight: 700,
+              border: '3px solid #2b7a1f',
+              borderRadius: '16px',
+              fontSize: '17px',
+              fontWeight: 800,
               cursor: isLoading ? 'default' : 'pointer',
-              transition: 'transform 0.2s, box-shadow 0.2s',
-              boxShadow: '0 4px 15px rgba(211, 47, 63, 0.4)'
+              transition: 'transform 0.15s, box-shadow 0.15s',
+              boxShadow: isLoading ? 'none' : '0 5px 0 #2b7a1f',
+              textShadow: '0 1px 2px rgba(0,0,0,0.3)'
             }}
-            onMouseOver={(e) => !isLoading && (e.currentTarget.style.transform = 'translateY(-2px)')}
-            onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+            onMouseDown={(e) => {
+              if (!isLoading) {
+                e.currentTarget.style.transform = 'translateY(3px)';
+                e.currentTarget.style.boxShadow = '0 2px 0 #2b7a1f';
+              }
+            }}
+            onMouseUp={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 5px 0 #2b7a1f';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 5px 0 #2b7a1f';
+            }}
           >
-            {isLoading ? '로그인 중...' : '로그인'}
+            {isLoading ? '로그인 중...' : '시작하기 🚀'}
           </button>
         </form>
 
         <div style={{
           textAlign: 'center',
-          marginTop: '28px',
-          paddingTop: '24px',
-          borderTop: '1px solid #eee'
+          marginTop: '24px',
+          paddingTop: '20px',
+          borderTop: '2px dashed #d4c4a8'
         }}>
-          <span style={{ color: '#888', fontSize: '14px' }}>
+          <span style={{ color: '#8b7355', fontSize: '14px', fontWeight: 500 }}>
             계정이 없으신가요?{' '}
           </span>
           <Link
             to="/register"
             style={{
-              color: '#D32F3F',
-              fontWeight: 600,
+              color: '#ff8a1d',
+              fontWeight: 700,
               textDecoration: 'none',
               fontSize: '14px'
             }}
@@ -263,13 +348,28 @@ export default function LoginPage() {
 
       {/* 푸터 */}
       <div style={{
-        marginTop: '32px',
+        marginTop: '28px',
         textAlign: 'center',
-        color: '#AEB8DE',
-        fontSize: '12px'
+        color: '#fff',
+        fontSize: '12px',
+        fontWeight: 500,
+        textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+        position: 'relative',
+        zIndex: 1
       }}>
         © 2026 플로우어학원. All Rights Reserved.
       </div>
+
+      {/* 잔디 바닥 */}
+      <div style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: '60px',
+        background: 'linear-gradient(180deg, #5cb340 0%, #4a9930 100%)',
+        borderTop: '4px solid #3d8028'
+      }} />
     </div>
   );
 }
