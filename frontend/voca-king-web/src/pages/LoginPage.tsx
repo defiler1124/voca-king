@@ -80,39 +80,34 @@ export default function LoginPage() {
       position: 'relative',
       overflow: 'hidden'
     }}>
-      {/* 배경 장식 */}
-      <div style={{
-        position: 'absolute',
-        top: '10%',
-        left: '5%',
-        fontSize: '60px',
-        opacity: 0.15,
-        transform: 'rotate(-15deg)'
-      }}>🌳</div>
-      <div style={{
-        position: 'absolute',
-        top: '20%',
-        right: '8%',
-        fontSize: '50px',
-        opacity: 0.15,
-        transform: 'rotate(10deg)'
-      }}>🌲</div>
-      <div style={{
-        position: 'absolute',
-        bottom: '15%',
-        left: '10%',
-        fontSize: '45px',
-        opacity: 0.15,
-        transform: 'rotate(5deg)'
-      }}>🍃</div>
-      <div style={{
-        position: 'absolute',
-        bottom: '25%',
-        right: '5%',
-        fontSize: '55px',
-        opacity: 0.15,
-        transform: 'rotate(-10deg)'
-      }}>🌿</div>
+      {/* 배경 장식 - 각 게임 테마 이모티콘 */}
+      {/* 왼쪽 상단 영역 */}
+      <div style={{ position: 'absolute', top: '5%', left: '3%', fontSize: '45px', opacity: 0.2, transform: 'rotate(-10deg)' }}>🌳</div>
+      <div style={{ position: 'absolute', top: '12%', left: '12%', fontSize: '35px', opacity: 0.18, transform: 'rotate(15deg)' }}>🍌</div>
+      <div style={{ position: 'absolute', top: '22%', left: '5%', fontSize: '38px', opacity: 0.15, transform: 'rotate(-5deg)' }}>🐵</div>
+
+      {/* 오른쪽 상단 영역 */}
+      <div style={{ position: 'absolute', top: '6%', right: '5%', fontSize: '42px', opacity: 0.18, transform: 'rotate(12deg)' }}>🌲</div>
+      <div style={{ position: 'absolute', top: '15%', right: '12%', fontSize: '36px', opacity: 0.2, transform: 'rotate(-8deg)' }}>🐻</div>
+      <div style={{ position: 'absolute', top: '25%', right: '4%', fontSize: '32px', opacity: 0.15, transform: 'rotate(20deg)' }}>⭐</div>
+
+      {/* 왼쪽 중간 영역 */}
+      <div style={{ position: 'absolute', top: '38%', left: '2%', fontSize: '34px', opacity: 0.15, transform: 'rotate(8deg)' }}>🐰</div>
+      <div style={{ position: 'absolute', top: '52%', left: '6%', fontSize: '40px', opacity: 0.18, transform: 'rotate(-12deg)' }}>🍃</div>
+
+      {/* 오른쪽 중간 영역 */}
+      <div style={{ position: 'absolute', top: '42%', right: '3%', fontSize: '36px', opacity: 0.18, transform: 'rotate(-15deg)' }}>🐼</div>
+      <div style={{ position: 'absolute', top: '55%', right: '8%', fontSize: '32px', opacity: 0.15, transform: 'rotate(10deg)' }}>🦋</div>
+
+      {/* 왼쪽 하단 영역 */}
+      <div style={{ position: 'absolute', bottom: '25%', left: '4%', fontSize: '38px', opacity: 0.2, transform: 'rotate(5deg)' }}>🐶</div>
+      <div style={{ position: 'absolute', bottom: '15%', left: '10%', fontSize: '42px', opacity: 0.15, transform: 'rotate(-8deg)' }}>🌿</div>
+      <div style={{ position: 'absolute', bottom: '8%', left: '3%', fontSize: '30px', opacity: 0.18, transform: 'rotate(15deg)' }}>🏆</div>
+
+      {/* 오른쪽 하단 영역 */}
+      <div style={{ position: 'absolute', bottom: '22%', right: '5%', fontSize: '35px', opacity: 0.18, transform: 'rotate(-10deg)' }}>🐱</div>
+      <div style={{ position: 'absolute', bottom: '12%', right: '12%', fontSize: '38px', opacity: 0.15, transform: 'rotate(8deg)' }}>🍌</div>
+      <div style={{ position: 'absolute', bottom: '6%', right: '4%', fontSize: '32px', opacity: 0.2, transform: 'rotate(-5deg)' }}>🌸</div>
 
       {/* 로고 영역 */}
       <div style={{ textAlign: 'center', marginBottom: '24px', position: 'relative', zIndex: 1 }}>
