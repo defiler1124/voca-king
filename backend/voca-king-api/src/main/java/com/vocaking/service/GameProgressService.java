@@ -90,15 +90,17 @@ public class GameProgressService {
     }
 
     /**
-     * 전체 학생 진도 조회 (관리자용)
+     * 전체 사용자 진도 조회 (관리자용)
+     * 진도 기록이 있는 모든 사용자 표시
      */
     @Transactional(readOnly = true)
     public List<com.vocaking.dto.GameProgressDto.UserProgressResponse> getAllUsersProgress() {
-        List<User> students = userRepository.findAll().stream()
-                .filter(u -> u.getRole() == User.Role.STUDENT)
+        // 진도 기록이 있는 모든 사용자 조회
+        List<User> usersWithProgress = userRepository.findAll().stream()
+                .filter(u -> !progressRepository.findByUserId(u.getId()).isEmpty())
                 .toList();
 
-        return students.stream().map(user -> {
+        return usersWithProgress.stream().map(user -> {
             List<GameProgress> progresses = progressRepository.findByUserId(user.getId());
 
             int listenCount = (int) progresses.stream()
