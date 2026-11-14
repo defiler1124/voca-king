@@ -74,4 +74,23 @@ public class GameProgressDto {
         private List<Long> bananaCleared;
         private List<Long> animalCleared;
     }
+
+    /**
+     * 학생별 진도 응답 DTO (관리자용)
+     */
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class UserProgressResponse {
+        private Long userId;
+        private String username;
+        private String name;
+        private Integer listenCleared;   // 클리어한 Day 수
+        private Integer bananaCleared;
+        private Integer animalCleared;
+        private Integer totalCleared;    // 전체 클리어 수
+        private LocalDateTime lastStudyAt;  // 최근 학습일
+    }
 }

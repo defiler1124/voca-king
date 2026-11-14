@@ -25,11 +25,13 @@ import {
   getAllUserStats,
   getUserDetailStats,
   getOverallStats,
+  getAllUsersProgress,
+  getUserProgressDetail,
 } from '../services/api';
 import type { Word, Level, Day } from '../types';
-import type { AdminUser, UserStats, UserDetailStats, OverallStats } from '../services/api';
+import type { AdminUser, UserStats, UserDetailStats, OverallStats, UserProgressResponse, ProgressDetailResponse } from '../services/api';
 
-type AdminTab = 'levels' | 'days' | 'words' | 'users' | 'stats';
+type AdminTab = 'levels' | 'days' | 'words' | 'users' | 'stats' | 'progress';
 
 export default function AdminPage() {
   const { user, logout } = useAuthStore();
@@ -77,6 +79,13 @@ export default function AdminPage() {
   const [loadingStats, setLoadingStats] = useState(false);
   const [showStatsModal, setShowStatsModal] = useState(false);
 
+  // 게임 진도 상태
+  const [usersProgress, setUsersProgress] = useState<UserProgressResponse[]>([]);
+  const [selectedUserProgress, setSelectedUserProgress] = useState<ProgressDetailResponse[]>([]);
+  const [selectedProgressUser, setSelectedProgressUser] = useState<UserProgressResponse | null>(null);
+  const [loadingProgress, setLoadingProgress] = useState(false);
+  const [showProgressModal, setShowProgressModal] = useState(false);
+
   useEffect(() => {
     if (user && user.role !== 'ADMIN') {
       navigate('/');
@@ -105,6 +114,8 @@ export default function AdminPage() {
       loadUsers();
     } else if (activeTab === 'stats') {
       loadStats();
+    } else if (activeTab === 'progress') {
+      loadProgress();
     }
   }, [activeTab]);
 
@@ -132,6 +143,28 @@ export default function AdminPage() {
       console.error('통계 로드 실패:', error);
     }
     setLoadingStats(false);
+  };
+
+  const loadProgress = async () => {
+    setLoadingProgress(true);
+    try {
+      const data = await getAllUsersProgress();
+      setUsersProgress(data);
+    } catch (error) {
+      console.error('진도 로드 실패:', error);
+    }
+    setLoadingProgress(false);
+  };
+
+  const handleViewUserProgress = async (userProgress: UserProgressResponse) => {
+    try {
+      const detail = await getUserProgressDetail(userProgress.userId);
+      setSelectedUserProgress(detail);
+      setSelectedProgressUser(userProgress);
+      setShowProgressModal(true);
+    } catch (error) {
+      console.error('진도 상세 조회 실패:', error);
+    }
   };
 
   const handleViewUserStats = async (userId: number) => {
@@ -404,6 +437,7 @@ export default function AdminPage() {
           { key: 'words', label: '📝 단어', color: '#FFCA57' },
           { key: 'users', label: '👥 회원', color: '#9B59B6' },
           { key: 'stats', label: '📈 통계', color: '#3498DB' },
+          { key: 'progress', label: '🎮 게임진도', color: '#27AE60' },
         ].map((tab) => (
           <button
             key={tab.key}
@@ -693,6 +727,139 @@ export default function AdminPage() {
                         <tr>
                           <td colSpan={9} style={{ padding: '60px', textAlign: 'center', color: '#888' }}>
                             학습 기록이 없습니다
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 게임 진도 관리 */}
+          {activeTab === 'progress' && (
+            <div style={{ padding: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#1B2A5B' }}>
+                  학생별 게임 진도 <span style={{ color: '#888', fontWeight: 400 }}>({usersProgress.length}명)</span>
+                </h2>
+                <button
+                  onClick={loadProgress}
+                  style={{
+                    padding: '10px 20px',
+                    background: 'linear-gradient(135deg, #27AE60, #2ECC71)',
+                    border: 'none',
+                    borderRadius: '10px',
+                    color: '#fff',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  🔄 새로고침
+                </button>
+              </div>
+
+              {loadingProgress ? (
+                <div style={{ padding: '60px', textAlign: 'center', color: '#888' }}>
+                  로딩 중...
+                </div>
+              ) : (
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ background: '#f8f9fa', borderBottom: '2px solid #e9ecef' }}>
+                        <th style={{ padding: '16px', textAlign: 'left', fontWeight: 600, color: '#495057' }}>학생</th>
+                        <th style={{ padding: '16px', textAlign: 'center', fontWeight: 600, color: '#495057' }}>🎧 듣기</th>
+                        <th style={{ padding: '16px', textAlign: 'center', fontWeight: 600, color: '#495057' }}>🍌 바나나</th>
+                        <th style={{ padding: '16px', textAlign: 'center', fontWeight: 600, color: '#495057' }}>🐻 동물</th>
+                        <th style={{ padding: '16px', textAlign: 'center', fontWeight: 600, color: '#495057' }}>총 클리어</th>
+                        <th style={{ padding: '16px', textAlign: 'center', fontWeight: 600, color: '#495057' }}>최근 학습</th>
+                        <th style={{ padding: '16px', textAlign: 'center', fontWeight: 600, color: '#495057' }}>상세</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {usersProgress.map((up) => (
+                        <tr key={up.userId} style={{ borderBottom: '1px solid #e9ecef' }}>
+                          <td style={{ padding: '16px' }}>
+                            <div style={{ fontWeight: 600, color: '#212529' }}>{up.name}</div>
+                            <div style={{ fontSize: '12px', color: '#868e96' }}>@{up.username}</div>
+                          </td>
+                          <td style={{ padding: '16px', textAlign: 'center' }}>
+                            <span style={{
+                              padding: '4px 12px',
+                              background: up.listenCleared > 0 ? '#E3F2FD' : '#f8f9fa',
+                              borderRadius: '20px',
+                              fontSize: '14px',
+                              fontWeight: 600,
+                              color: up.listenCleared > 0 ? '#1565C0' : '#adb5bd'
+                            }}>
+                              {up.listenCleared}
+                            </span>
+                          </td>
+                          <td style={{ padding: '16px', textAlign: 'center' }}>
+                            <span style={{
+                              padding: '4px 12px',
+                              background: up.bananaCleared > 0 ? '#FFF8E1' : '#f8f9fa',
+                              borderRadius: '20px',
+                              fontSize: '14px',
+                              fontWeight: 600,
+                              color: up.bananaCleared > 0 ? '#F9A825' : '#adb5bd'
+                            }}>
+                              {up.bananaCleared}
+                            </span>
+                          </td>
+                          <td style={{ padding: '16px', textAlign: 'center' }}>
+                            <span style={{
+                              padding: '4px 12px',
+                              background: up.animalCleared > 0 ? '#E8F5E9' : '#f8f9fa',
+                              borderRadius: '20px',
+                              fontSize: '14px',
+                              fontWeight: 600,
+                              color: up.animalCleared > 0 ? '#2E7D32' : '#adb5bd'
+                            }}>
+                              {up.animalCleared}
+                            </span>
+                          </td>
+                          <td style={{ padding: '16px', textAlign: 'center' }}>
+                            <span style={{
+                              padding: '6px 14px',
+                              background: up.totalCleared > 0 ? 'linear-gradient(135deg, #667eea, #764ba2)' : '#f8f9fa',
+                              borderRadius: '20px',
+                              fontSize: '14px',
+                              fontWeight: 700,
+                              color: up.totalCleared > 0 ? '#fff' : '#adb5bd'
+                            }}>
+                              {up.totalCleared}
+                            </span>
+                          </td>
+                          <td style={{ padding: '16px', textAlign: 'center', fontSize: '13px', color: '#495057' }}>
+                            {up.lastStudyAt ? new Date(up.lastStudyAt).toLocaleDateString('ko-KR') : '-'}
+                          </td>
+                          <td style={{ padding: '16px', textAlign: 'center' }}>
+                            <button
+                              onClick={() => handleViewUserProgress(up)}
+                              style={{
+                                padding: '6px 12px',
+                                background: '#E8F5E9',
+                                border: 'none',
+                                borderRadius: '6px',
+                                color: '#2E7D32',
+                                fontSize: '12px',
+                                fontWeight: 600,
+                                cursor: 'pointer'
+                              }}
+                            >
+                              상세보기
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {usersProgress.length === 0 && (
+                        <tr>
+                          <td colSpan={7} style={{ padding: '60px', textAlign: 'center', color: '#888' }}>
+                            게임 진도 기록이 없습니다
                           </td>
                         </tr>
                       )}
@@ -1422,6 +1589,129 @@ export default function AdminPage() {
 
             <button
               onClick={() => setShowStatsModal(false)}
+              style={{
+                width: '100%',
+                padding: '14px',
+                background: '#f0f0f0',
+                border: 'none',
+                borderRadius: '10px',
+                color: '#666',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                marginTop: '24px'
+              }}
+            >
+              닫기
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 진도 상세 모달 */}
+      {showProgressModal && selectedProgressUser && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px',
+          zIndex: 50,
+          overflowY: 'auto'
+        }}>
+          <div style={{ background: '#fff', borderRadius: '20px', padding: '32px', width: '100%', maxWidth: '700px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#1B2A5B' }}>
+                {selectedProgressUser.name}님의 게임 진도
+              </h3>
+              <button
+                onClick={() => setShowProgressModal(false)}
+                style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#888' }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* 진도 요약 */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
+              <div style={{ background: '#E3F2FD', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                <div style={{ fontSize: '12px', color: '#888' }}>🎧 듣기</div>
+                <div style={{ fontSize: '24px', fontWeight: 800, color: '#1565C0' }}>{selectedProgressUser.listenCleared}</div>
+              </div>
+              <div style={{ background: '#FFF8E1', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                <div style={{ fontSize: '12px', color: '#888' }}>🍌 바나나</div>
+                <div style={{ fontSize: '24px', fontWeight: 800, color: '#F9A825' }}>{selectedProgressUser.bananaCleared}</div>
+              </div>
+              <div style={{ background: '#E8F5E9', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                <div style={{ fontSize: '12px', color: '#888' }}>🐻 동물</div>
+                <div style={{ fontSize: '24px', fontWeight: 800, color: '#2E7D32' }}>{selectedProgressUser.animalCleared}</div>
+              </div>
+              <div style={{ background: 'linear-gradient(135deg, #667eea, #764ba2)', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.8)' }}>총 클리어</div>
+                <div style={{ fontSize: '24px', fontWeight: 800, color: '#fff' }}>{selectedProgressUser.totalCleared}</div>
+              </div>
+            </div>
+
+            {/* 상세 기록 */}
+            {selectedUserProgress.length > 0 ? (
+              <div>
+                <h4 style={{ margin: '0 0 12px', fontSize: '16px', fontWeight: 700, color: '#1B2A5B' }}>
+                  클리어 기록
+                </h4>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ background: '#f8f9fa', borderBottom: '2px solid #e9ecef' }}>
+                        <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600, color: '#495057' }}>Day</th>
+                        <th style={{ padding: '12px', textAlign: 'center', fontWeight: 600, color: '#495057' }}>게임</th>
+                        <th style={{ padding: '12px', textAlign: 'center', fontWeight: 600, color: '#495057' }}>점수</th>
+                        <th style={{ padding: '12px', textAlign: 'center', fontWeight: 600, color: '#495057' }}>별점</th>
+                        <th style={{ padding: '12px', textAlign: 'center', fontWeight: 600, color: '#495057' }}>시간</th>
+                        <th style={{ padding: '12px', textAlign: 'center', fontWeight: 600, color: '#495057' }}>완료일</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedUserProgress.map((p) => (
+                        <tr key={p.id} style={{ borderBottom: '1px solid #e9ecef' }}>
+                          <td style={{ padding: '12px', fontWeight: 600 }}>Day {p.dayId}</td>
+                          <td style={{ padding: '12px', textAlign: 'center' }}>
+                            <span style={{
+                              padding: '4px 10px',
+                              borderRadius: '12px',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              background: p.gameType === 'LISTEN' ? '#E3F2FD' : p.gameType === 'BANANA' ? '#FFF8E1' : '#E8F5E9',
+                              color: p.gameType === 'LISTEN' ? '#1565C0' : p.gameType === 'BANANA' ? '#F9A825' : '#2E7D32'
+                            }}>
+                              {p.gameType === 'LISTEN' ? '🎧' : p.gameType === 'BANANA' ? '🍌' : '🐻'}
+                            </span>
+                          </td>
+                          <td style={{ padding: '12px', textAlign: 'center' }}>{p.score}/{p.totalWords}</td>
+                          <td style={{ padding: '12px', textAlign: 'center' }}>
+                            {'⭐'.repeat(p.stars || 0)}
+                          </td>
+                          <td style={{ padding: '12px', textAlign: 'center', color: '#666' }}>
+                            {p.clearTime ? `${p.clearTime}초` : '-'}
+                          </td>
+                          <td style={{ padding: '12px', textAlign: 'center', fontSize: '13px', color: '#666' }}>
+                            {p.completedAt ? new Date(p.completedAt).toLocaleDateString('ko-KR') : '-'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : (
+              <div style={{ padding: '40px', textAlign: 'center', color: '#888', background: '#f8f9fa', borderRadius: '12px' }}>
+                아직 게임 클리어 기록이 없습니다
+              </div>
+            )}
+
+            <button
+              onClick={() => setShowProgressModal(false)}
               style={{
                 width: '100%',
                 padding: '14px',

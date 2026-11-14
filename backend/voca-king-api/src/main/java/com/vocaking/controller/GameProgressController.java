@@ -3,14 +3,18 @@ package com.vocaking.controller;
 import com.vocaking.dto.GameProgressDto.Response;
 import com.vocaking.dto.GameProgressDto.SaveRequest;
 import com.vocaking.dto.GameProgressDto.SummaryResponse;
+import com.vocaking.dto.GameProgressDto.UserProgressResponse;
 import com.vocaking.service.GameProgressService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 게임 진도 API 컨트롤러
@@ -43,6 +47,28 @@ public class GameProgressController {
     public ResponseEntity<SummaryResponse> getProgressSummary(
             @AuthenticationPrincipal UserDetails userDetails) {
         SummaryResponse response = progressService.getProgressSummary(userDetails.getUsername());
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 전체 학생 진도 조회 (관리자용)
+     */
+    @Operation(summary = "전체 학생 진도 조회", description = "모든 학생의 진도 요약을 조회합니다 (관리자 전용)")
+    @GetMapping("/admin/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<UserProgressResponse>> getAllUsersProgress() {
+        List<UserProgressResponse> response = progressService.getAllUsersProgress();
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 특정 학생 상세 진도 조회 (관리자용)
+     */
+    @Operation(summary = "학생 상세 진도 조회", description = "특정 학생의 상세 진도를 조회합니다 (관리자 전용)")
+    @GetMapping("/admin/user/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<Response>> getUserProgressDetail(@PathVariable Long userId) {
+        List<Response> response = progressService.getUserProgressDetail(userId);
         return ResponseEntity.ok(response);
     }
 }

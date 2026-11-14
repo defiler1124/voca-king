@@ -88,4 +88,57 @@ public class GameProgressService {
                 .animalCleared(animalCleared)
                 .build();
     }
+
+    /**
+     * 전체 학생 진도 조회 (관리자용)
+     */
+    @Transactional(readOnly = true)
+    public List<com.vocaking.dto.GameProgressDto.UserProgressResponse> getAllUsersProgress() {
+        List<User> students = userRepository.findAll().stream()
+                .filter(u -> u.getRole() == User.Role.STUDENT)
+                .toList();
+
+        return students.stream().map(user -> {
+            List<GameProgress> progresses = progressRepository.findByUserId(user.getId());
+
+            int listenCount = (int) progresses.stream()
+                    .filter(p -> p.getGameType() == GameProgress.GameType.LISTEN && p.getCompleted())
+                    .count();
+            int bananaCount = (int) progresses.stream()
+                    .filter(p -> p.getGameType() == GameProgress.GameType.BANANA && p.getCompleted())
+                    .count();
+            int animalCount = (int) progresses.stream()
+                    .filter(p -> p.getGameType() == GameProgress.GameType.ANIMAL && p.getCompleted())
+                    .count();
+
+            // 최근 학습일
+            java.time.LocalDateTime lastStudyAt = progresses.stream()
+                    .map(GameProgress::getUpdatedAt)
+                    .filter(java.util.Objects::nonNull)
+                    .max(java.time.LocalDateTime::compareTo)
+                    .orElse(null);
+
+            return com.vocaking.dto.GameProgressDto.UserProgressResponse.builder()
+                    .userId(user.getId())
+                    .username(user.getUsername())
+                    .name(user.getName())
+                    .listenCleared(listenCount)
+                    .bananaCleared(bananaCount)
+                    .animalCleared(animalCount)
+                    .totalCleared(listenCount + bananaCount + animalCount)
+                    .lastStudyAt(lastStudyAt)
+                    .build();
+        }).toList();
+    }
+
+    /**
+     * 특정 학생의 상세 진도 조회 (관리자용)
+     */
+    @Transactional(readOnly = true)
+    public List<Response> getUserProgressDetail(Long userId) {
+        return progressRepository.findByUserId(userId).stream()
+                .filter(GameProgress::getCompleted)
+                .map(Response::from)
+                .toList();
+    }
 }

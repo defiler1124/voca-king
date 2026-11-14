@@ -93,6 +93,43 @@ export const getProgressSummary = async (): Promise<GameProgressSummary> => {
   return response.data;
 };
 
+/** 학생별 진도 응답 (관리자용) */
+export interface UserProgressResponse {
+  userId: number;
+  username: string;
+  name: string;
+  listenCleared: number;
+  bananaCleared: number;
+  animalCleared: number;
+  totalCleared: number;
+  lastStudyAt: string | null;
+}
+
+/** 진도 상세 응답 */
+export interface ProgressDetailResponse {
+  id: number;
+  dayId: number;
+  gameType: string;
+  completed: boolean;
+  score: number;
+  totalWords: number;
+  stars: number;
+  clearTime: number;
+  completedAt: string;
+}
+
+/** 전체 학생 진도 조회 (관리자용) */
+export const getAllUsersProgress = async (): Promise<UserProgressResponse[]> => {
+  const response = await api.get<UserProgressResponse[]>('/progress/admin/all');
+  return response.data;
+};
+
+/** 특정 학생 상세 진도 조회 (관리자용) */
+export const getUserProgressDetail = async (userId: number): Promise<ProgressDetailResponse[]> => {
+  const response = await api.get<ProgressDetailResponse[]>(`/progress/admin/user/${userId}`);
+  return response.data;
+};
+
 // ==================== 레벨 API ====================
 
 /** 모든 레벨 조회 */
