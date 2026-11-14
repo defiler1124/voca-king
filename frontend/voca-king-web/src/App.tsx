@@ -83,12 +83,12 @@ function App() {
           }
         />
 
-        {/* 보호된 라우트 */}
+        {/* 보호된 라우트 - V2가 기본 */}
         <Route
           path="/"
           element={
             <ProtectedRoute>
-              <HomePage />
+              <HomePageV2 />
             </ProtectedRoute>
           }
         />
@@ -101,12 +101,12 @@ function App() {
           }
         />
 
-        {/* V2 새 버전 */}
+        {/* V1 레거시 버전 */}
         <Route
-          path="/v2"
+          path="/v1"
           element={
             <ProtectedRoute>
-              <HomePageV2 />
+              <HomePage />
             </ProtectedRoute>
           }
         />
