@@ -5,6 +5,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { useWordStore } from '../stores/wordStore';
+import { useProgressStore } from '../stores/progressStore';
 import { speak, initTTS } from '../utils/tts';
 import { recordAttempt, saveQuizResult } from '../services/api';
 import type { Word } from '../types';
@@ -119,6 +120,15 @@ export default function HomePageV2() {
     fetchLevels, setCurrentLevel, setCurrentDay, allWordsInLevel,
   } = useWordStore();
 
+  // 진도 스토어 (DB 저장)
+  const {
+    listenCleared: listenClearedArr,
+    bananaCleared: bananaClearedArr,
+    animalCleared: animalClearedArr,
+    fetchProgress,
+    isLoaded: progressLoaded
+  } = useProgressStore();
+
   const [viewMode, setViewMode] = useState<ViewMode>('cards');
   const [activeGame, setActiveGame] = useState<GameType>(null);
   const [playingWordId, setPlayingWordId] = useState<number | null>(null);
@@ -141,24 +151,8 @@ export default function HomePageV2() {
       return saved ? new Set(JSON.parse(saved)) : new Set();
     } catch { return new Set(); }
   });
-  const [bananaClearedDays, setBananaClearedDays] = useState<Set<number>>(() => {
-    try {
-      const saved = localStorage.getItem('voca-king-banana-cleared');
-      return saved ? new Set(JSON.parse(saved)) : new Set();
-    } catch { return new Set(); }
-  });
-  const [animalClearedDays, setAnimalClearedDays] = useState<Set<number>>(() => {
-    try {
-      const saved = localStorage.getItem('voca-king-animal-cleared');
-      return saved ? new Set(JSON.parse(saved)) : new Set();
-    } catch { return new Set(); }
-  });
-  const [listenClearedDays, setListenClearedDays] = useState<Set<number>>(() => {
-    try {
-      const saved = localStorage.getItem('voca-king-listen-cleared');
-      return saved ? new Set(JSON.parse(saved)) : new Set();
-    } catch { return new Set(); }
-  });
+  // 진도 데이터는 progressStore에서 관리 (DB 저장)
+  // bananaClearedArr, animalClearedArr, listenClearedArr 사용
 
   const dayScrollRef = useRef<HTMLDivElement>(null);
   const levelScrollRef = useRef<HTMLDivElement>(null);
@@ -200,25 +194,25 @@ export default function HomePageV2() {
     setActiveGame(null); setSeenCards(new Set());
   }, [currentDay?.id, currentLevelId]);
 
-  // 게임에서 돌아올 때 localStorage에서 클리어 상태 다시 읽기
+  // 진도 데이터 로드 (DB에서)
   useEffect(() => {
-    if (activeGame === null) {
-      try {
-        const savedBanana = localStorage.getItem('voca-king-banana-cleared');
-        if (savedBanana) setBananaClearedDays(new Set(JSON.parse(savedBanana)));
-        const savedAnimal = localStorage.getItem('voca-king-animal-cleared');
-        if (savedAnimal) setAnimalClearedDays(new Set(JSON.parse(savedAnimal)));
-        const savedListen = localStorage.getItem('voca-king-listen-cleared');
-        if (savedListen) setListenClearedDays(new Set(JSON.parse(savedListen)));
-      } catch { /* ignore */ }
+    if (user && !progressLoaded) {
+      fetchProgress();
     }
-  }, [activeGame]);
+  }, [user, progressLoaded, fetchProgress]);
 
-  // 현재 Day의 클리어 여부
+  // 게임에서 돌아올 때 진도 새로고침
+  useEffect(() => {
+    if (activeGame === null && user) {
+      fetchProgress();
+    }
+  }, [activeGame, user, fetchProgress]);
+
+  // 현재 Day의 클리어 여부 (DB 기반)
   const flashCleared = currentDay ? (seenCards.size >= currentDay.words.length || flashClearedDays.has(currentDay.id)) : false;
-  const bananaCleared = currentDay ? bananaClearedDays.has(currentDay.id) : false;
-  const animalCleared = currentDay ? animalClearedDays.has(currentDay.id) : false;
-  const listenCleared = currentDay ? listenClearedDays.has(currentDay.id) : false;
+  const bananaCleared = currentDay ? bananaClearedArr.includes(currentDay.id) : false;
+  const animalCleared = currentDay ? animalClearedArr.includes(currentDay.id) : false;
+  const listenCleared = currentDay ? listenClearedArr.includes(currentDay.id) : false;
 
   // 모든 카드를 보면 클리어 상태 저장 + 다시하기 모드 해제
   useEffect(() => {

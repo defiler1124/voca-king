@@ -65,6 +65,34 @@ export const getCurrentUser = async (): Promise<User> => {
   return response.data;
 };
 
+// ==================== 게임 진도 API ====================
+
+export interface GameProgressSummary {
+  listenCleared: number[];
+  bananaCleared: number[];
+  animalCleared: number[];
+}
+
+export interface SaveProgressRequest {
+  dayId: number;
+  gameType: 'LISTEN' | 'BANANA' | 'ANIMAL';
+  score: number;
+  totalWords: number;
+  stars: number;
+  clearTime: number;
+}
+
+/** 진도 저장 */
+export const saveGameProgress = async (data: SaveProgressRequest): Promise<void> => {
+  await api.post('/progress', data);
+};
+
+/** 전체 진도 요약 조회 */
+export const getProgressSummary = async (): Promise<GameProgressSummary> => {
+  const response = await api.get<GameProgressSummary>('/progress/summary');
+  return response.data;
+};
+
 // ==================== 레벨 API ====================
 
 /** 모든 레벨 조회 */

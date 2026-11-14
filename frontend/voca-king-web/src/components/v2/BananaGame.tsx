@@ -4,6 +4,7 @@
  */
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { speak } from '../../utils/tts';
+import { useProgressStore } from '../../stores/progressStore';
 import type { Word } from '../../types';
 import './BananaGame.css';
 
@@ -81,6 +82,9 @@ function playWrongSound() {
 export default function BananaGame({ words, allWords, dayId, onFinish, onBack, onNextStage }: Props) {
   // 단어 수에 따른 게임 시간 계산
   const gameTime = calcGameTime(words.length);
+
+  // 진도 저장 스토어
+  const { saveProgress } = useProgressStore();
 
   const [queue, setQueue] = useState<Word[]>([]);
   const [current, setCurrent] = useState<Word | null>(null);
@@ -232,20 +236,19 @@ export default function BananaGame({ words, allWords, dayId, onFinish, onBack, o
       const total = words.length;
       // 시간 내 완주 시 클리어로 저장 (완벽 점수 아니어도 OK)
       if (stageClear) {
-        try {
-          const saved = localStorage.getItem('voca-king-banana-cleared');
-          const clearedDays: number[] = saved ? JSON.parse(saved) : [];
-          if (!clearedDays.includes(dayId)) {
-            clearedDays.push(dayId);
-            localStorage.setItem('voca-king-banana-cleared', JSON.stringify(clearedDays));
-          }
-        } catch (e) {
-          console.error('Failed to save banana clear state', e);
-        }
+        // DB에 진도 저장
+        saveProgress({
+          dayId,
+          gameType: 'BANANA',
+          score,
+          totalWords: total,
+          stars: missed.length === 0 ? 3 : missed.length <= 2 ? 2 : 1,
+          clearTime: gameTime - timeLeft,
+        }).catch(e => console.error('Failed to save banana progress', e));
       }
       onFinish(score, total);
     }
-  }, [gameOver, stageClear, words.length, dayId, onFinish]);
+  }, [gameOver, stageClear, words.length, dayId, onFinish, saveProgress, missed.length, gameTime, timeLeft]);
 
   // 폭죽 효과 (정답 시 원숭이 입 근처)
   const triggerBurst = useCallback(() => {

@@ -4,6 +4,7 @@
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { speak } from '../../utils/tts';
+import { useProgressStore } from '../../stores/progressStore';
 import type { Word } from '../../types';
 import './ListenGame.css';
 
@@ -102,6 +103,9 @@ export default function ListenGame({ words, allWords, dayId, onFinish, onBack, o
   // 단어 수에 따른 게임 시간 계산
   const gameTime = calcGameTime(words.length);
 
+  // 진도 저장 스토어
+  const { saveProgress } = useProgressStore();
+
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [rightCount, setRightCount] = useState(0);
@@ -190,20 +194,19 @@ export default function ListenGame({ words, allWords, dayId, onFinish, onBack, o
       const total = words.length;
       // 시간 내 완주 시 클리어로 저장 (완벽 점수 아니어도 OK)
       if (stageClear) {
-        try {
-          const saved = localStorage.getItem('voca-king-listen-cleared');
-          const clearedDays: number[] = saved ? JSON.parse(saved) : [];
-          if (!clearedDays.includes(dayId)) {
-            clearedDays.push(dayId);
-            localStorage.setItem('voca-king-listen-cleared', JSON.stringify(clearedDays));
-          }
-        } catch (e) {
-          console.error('Failed to save listen clear state', e);
-        }
+        // DB에 진도 저장
+        saveProgress({
+          dayId,
+          gameType: 'LISTEN',
+          score,
+          totalWords: total,
+          stars: allMissed.length === 0 ? 3 : allMissed.length <= 2 ? 2 : 1,
+          clearTime: gameTime - timeLeft,
+        }).catch(e => console.error('Failed to save listen progress', e));
       }
       onFinish(score, total);
     }
-  }, [gameOver, stageClear, words.length, dayId, onFinish]);
+  }, [gameOver, stageClear, words.length, dayId, onFinish, saveProgress, allMissed.length, gameTime, timeLeft]);
 
   const handleSpeak = () => {
     const q = questions[currentIdx];
