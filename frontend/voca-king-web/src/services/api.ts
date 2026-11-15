@@ -109,6 +109,8 @@ export interface UserProgressResponse {
 export interface ProgressDetailResponse {
   id: number;
   dayId: number;
+  levelName: string;
+  dayNumber: number;
   gameType: string;
   completed: boolean;
   score: number;

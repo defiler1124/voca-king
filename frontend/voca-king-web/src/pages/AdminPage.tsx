@@ -1664,6 +1664,7 @@ export default function AdminPage() {
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ background: '#f8f9fa', borderBottom: '2px solid #e9ecef' }}>
+                        <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600, color: '#495057' }}>레벨</th>
                         <th style={{ padding: '12px', textAlign: 'left', fontWeight: 600, color: '#495057' }}>Day</th>
                         <th style={{ padding: '12px', textAlign: 'center', fontWeight: 600, color: '#495057' }}>게임</th>
                         <th style={{ padding: '12px', textAlign: 'center', fontWeight: 600, color: '#495057' }}>점수</th>
@@ -1675,7 +1676,8 @@ export default function AdminPage() {
                     <tbody>
                       {selectedUserProgress.map((p) => (
                         <tr key={p.id} style={{ borderBottom: '1px solid #e9ecef' }}>
-                          <td style={{ padding: '12px', fontWeight: 600 }}>Day {p.dayId}</td>
+                          <td style={{ padding: '12px', fontWeight: 600, color: '#667eea' }}>{p.levelName}</td>
+                          <td style={{ padding: '12px', fontWeight: 600 }}>Day {p.dayNumber}</td>
                           <td style={{ padding: '12px', textAlign: 'center' }}>
                             <span style={{
                               padding: '4px 10px',

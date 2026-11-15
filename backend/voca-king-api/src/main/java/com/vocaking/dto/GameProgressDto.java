@@ -38,6 +38,8 @@ public class GameProgressDto {
     public static class Response {
         private Long id;
         private Long dayId;
+        private String levelName;      // 레벨명 추가
+        private Integer dayNumber;     // Day 번호 추가
         private String gameType;
         private Boolean completed;
         private Integer score;
@@ -50,6 +52,8 @@ public class GameProgressDto {
             return Response.builder()
                     .id(progress.getId())
                     .dayId(progress.getDay().getId())
+                    .levelName(progress.getDay().getLevel().getName())
+                    .dayNumber(progress.getDay().getDayNumber())
                     .gameType(progress.getGameType().name())
                     .completed(progress.getCompleted())
                     .score(progress.getScore())
