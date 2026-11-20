@@ -344,7 +344,7 @@ export default function SpellingGame({ words, dayId, onFinish, onBack, onFinalTe
     setSlotsDone(false);
     setLocked(false);  // locked 해제
     if (round[0]) {
-      setTimeout(() => speak(round[0].w), 350);
+      setTimeout(() => speak(round[0].w), 600);  // 시작 시 단어 발음
     }
   }, [round]);
 
@@ -364,7 +364,7 @@ export default function SpellingGame({ words, dayId, onFinish, onBack, onFinalTe
       const abc = 'abcdefghijklmnopqrstuvwxyz'.split('').filter(c => !round[0].low.includes(c));
       const tileChars = shuffleArray([...round[0].low, ...shuffleArray(abc).slice(0, 2)]);
       setTiles(tileChars.map(ch => ({ ch, used: false })));
-      setTimeout(() => speak(round[0].w), 350);
+      setTimeout(() => speak(round[0].w), 600);  // 시작 시 단어 발음
     }
   }, [round]);
 
@@ -477,8 +477,8 @@ export default function SpellingGame({ words, dayId, onFinish, onBack, onFinalTe
 
       setTimeout(() => {
         sayLetters(key);
-        setTimeout(() => speak(currentWord.w), 400);
-      }, 200);
+        setTimeout(() => speak(currentWord.w), 700);  // 글자 발음 후 단어 발음까지 텀
+      }, 300);
 
       if (isQuizRep) {
         // 원본: repBad와 comboBad 둘 다 없어야 lv2
@@ -511,11 +511,11 @@ export default function SpellingGame({ words, dayId, onFinish, onBack, onFinalTe
             setPeekIdx(null);
             setSlotsDone(false);
             setLocked(false);
-            setTimeout(() => speak(round[wordIdx + 1].w), 350);
+            setTimeout(() => speak(round[wordIdx + 1].w), 800);  // 다음 단어 발음 간격 늘림
           } else {
             setPhase('stage2-intro');
           }
-        }, waitTime + 900);
+        }, waitTime + 1200);  // 전환 시간 늘림
       } else {
         // 1,2,3번 반복에서도 칭찬 효과 (원본과 동일)
         setTimeout(() => wordCelebrate(1), 350);
@@ -597,8 +597,8 @@ export default function SpellingGame({ words, dayId, onFinish, onBack, onFinalTe
 
       setTimeout(() => {
         sayLetters(tile.ch);
-        setTimeout(() => speak(currentWord.w), 400);
-      }, 200);
+        setTimeout(() => speak(currentWord.w), 700);  // 글자 발음 후 단어 발음까지 텀
+      }, 300);
 
       // 콤보 처리
       if (isClean) {
@@ -616,8 +616,8 @@ export default function SpellingGame({ words, dayId, onFinish, onBack, onFinalTe
         setTimeout(() => wordCelebrate(1), 350);
       }
 
-      // 콤보면 1700ms, 아니면 900ms (원본 타이밍)
-      const waitTime = isClean && streak >= 1 ? 1700 : 900;
+      // 콤보면 1700ms, 아니면 1200ms (다음 단어 발음 간격 확보)
+      const waitTime = isClean && streak >= 1 ? 1700 : 1200;
       setTimeout(() => {
         if (wordIdx < round.length - 1) {
           const nextWord = round[wordIdx + 1];
@@ -632,7 +632,7 @@ export default function SpellingGame({ words, dayId, onFinish, onBack, onFinalTe
           const tileChars = shuffleArray([...nextWord.low, ...shuffleArray(abc).slice(0, 2)]);
           setTiles(tileChars.map(ch => ({ ch, used: false })));
           setLocked(false);
-          setTimeout(() => speak(nextWord.w), 350);
+          setTimeout(() => speak(nextWord.w), 800);  // 다음 단어 발음 간격 늘림
         } else {
           endRound();
         }
