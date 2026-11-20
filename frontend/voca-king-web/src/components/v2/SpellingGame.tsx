@@ -344,7 +344,7 @@ export default function SpellingGame({ words, dayId, onFinish, onBack, onFinalTe
     setSlotsDone(false);
     setLocked(false);  // locked 해제
     if (round[0]) {
-      setTimeout(() => speak(round[0].w), 600);  // 시작 시 단어 발음
+      setTimeout(() => speak(round[0].w), 350);  // 1단계 시작 시 빠르게 발음
     }
   }, [round]);
 
