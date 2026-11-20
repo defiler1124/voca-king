@@ -309,6 +309,19 @@ export default function HomePageV2() {
   const scrollDays = (dir: 'left' | 'right') => { dayScrollRef.current?.scrollBy({ left: dir === 'left' ? -200 : 200, behavior: 'smooth' }); };
 
   const scrollLevels = (dir: 'left' | 'right') => { levelScrollRef.current?.scrollBy({ left: dir === 'left' ? -150 : 150, behavior: 'smooth' }); };
+
+  // Day/Level 선택 시 랜덤 음악 변경
+  const handleSelectDay = (dayId: number) => {
+    setCurrentDay(dayId);
+    const randomIdx = Math.floor(Math.random() * bgm.tracks.length);
+    bgm.changeTrack(randomIdx);
+  };
+
+  const handleSelectLevel = (levelId: number) => {
+    setCurrentLevel(levelId);
+    const randomIdx = Math.floor(Math.random() * bgm.tracks.length);
+    bgm.changeTrack(randomIdx);
+  };
   const onLevelMouseDown = (e: React.MouseEvent) => {
     setLevelDragging(true);
     setLevelStartX(e.pageX - (levelScrollRef.current?.offsetLeft || 0));
@@ -364,7 +377,7 @@ export default function HomePageV2() {
           onMouseLeave={onLevelMouseUp}
         >
           {levels.map((level, idx) => (
-            <button key={level.id} className={`v2-lv-chip ${currentLevelId === level.id ? 'active' : ''}`} onClick={() => setCurrentLevel(level.id)}>
+            <button key={level.id} className={`v2-lv-chip ${currentLevelId === level.id ? 'active' : ''}`} onClick={() => handleSelectLevel(level.id)}>
               <b>{LEVEL_EMOJIS[idx + 1] || '📚'} {level.name.replace('Lv.', '').replace(' Voca King', '').replace(' Grand Master', '').replace(' Legend', '').replace(' Master', '').replace(' Newbie', '')}</b>
               <span>{level.name.includes('Voca King') ? 'Voca King' : level.name.includes('Grand Master') ? 'Grand Master' : level.name.includes('Legend') ? 'Legend' : level.name.includes('Master') ? 'Master' : 'Newbie'}</span>
             </button>
@@ -394,7 +407,7 @@ export default function HomePageV2() {
           onMouseLeave={onDayMouseUp}
         >
           {days.map((day) => (
-            <button key={day.id} className={`v2-day-chip ${currentDay?.id === day.id ? 'active' : ''}`} onClick={() => setCurrentDay(day.id)}>Day {day.dayNumber}</button>
+            <button key={day.id} className={`v2-day-chip ${currentDay?.id === day.id ? 'active' : ''}`} onClick={() => handleSelectDay(day.id)}>Day {day.dayNumber}</button>
           ))}
         </div>
         <button className="v2-day-arrow" onClick={() => scrollDays('right')}>›</button>
