@@ -13,7 +13,7 @@ import type { AttemptRequest } from '../services/api';
 import SceneBackground from '../components/v2/SceneBackground';
 import BananaGame from '../components/v2/BananaGame';
 import AnimalGame from '../components/v2/AnimalGame';
-import ListenGame from '../components/v2/ListenGame';
+import SpellingGame from '../components/v2/SpellingGame';
 import { useBgm } from '../hooks/useBgm';
 import '../styles/v2-theme.css';
 
@@ -76,14 +76,8 @@ const FlashIcon = () => (
   </svg>
 );
 
-const ListenIcon = () => (
-  <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" width="48" height="48">
-    <path d="M12 38 V32 a20 20 0 0 1 40 0 V38" fill="none" stroke="#2f7fa8" strokeWidth="5" strokeLinecap="round"/>
-    <rect x="7" y="34" width="12" height="20" rx="6" fill="#4cc2e8" stroke="#2f7fa8" strokeWidth="2.5"/>
-    <rect x="45" y="34" width="12" height="20" rx="6" fill="#4cc2e8" stroke="#2f7fa8" strokeWidth="2.5"/>
-    <path d="M32 30 q4 4 0 8 M37 26 q8 8 0 16" stroke="#ff8aa0" strokeWidth="3.2" fill="none" strokeLinecap="round"/>
-    <circle cx="26" cy="34" r="3" fill="#ff8aa0"/>
-  </svg>
+const SpellingIcon = () => (
+  <span style={{ fontSize: '38px', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px' }}>🔤</span>
 );
 
 const BananaIcon = () => (
@@ -98,14 +92,14 @@ const STAGE_ICONS: Record<string, React.FC> = {
   flash: FlashIcon,
   match: BananaIcon,
   pop: BearIcon,
-  listen: ListenIcon,
+  listen: SpellingIcon,
 };
 
 const GAME_STAGES = [
   { id: 'flash' as const, no: 1, name: '플래시카드', theme: 'v2-t-flash' },
   { id: 'match' as const, no: 2, name: '바나나 받아먹기', theme: 'v2-t-match' },
   { id: 'pop' as const, no: 3, name: '동물 구출 팡팡', theme: 'v2-t-pop' },
-  { id: 'listen' as const, no: 4, name: '듣고 고르기', theme: 'v2-t-listen' },
+  { id: 'listen' as const, no: 4, name: '스펠링 연습', theme: 'v2-t-listen' },
 ];
 
 const LEVEL_EMOJIS: Record<number, string> = {
@@ -139,6 +133,7 @@ export default function HomePageV2() {
   const [quizAnswered, setQuizAnswered] = useState(false);
   const [quizScore, setQuizScore] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
+  const [quizConfetti, setQuizConfetti] = useState(false);  // 파이널테스트 완료 콘페티
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [quizAttempts, setQuizAttempts] = useState<AttemptRequest[]>([]);
   const [shuffledQuizWords, setShuffledQuizWords] = useState<Word[]>([]);
@@ -280,7 +275,7 @@ export default function HomePageV2() {
     if (!currentDay) return;
     const shuffled = [...currentDay.words].sort(() => Math.random() - 0.5);
     setShuffledQuizWords(shuffled); setQuizIndex(0); setQuizScore(0);
-    setQuizFinished(false); setQuizAnswered(false); setSelectedAnswer(null); setQuizAttempts([]);
+    setQuizFinished(false); setQuizConfetti(false); setQuizAnswered(false); setSelectedAnswer(null); setQuizAttempts([]);
     setTimeout(() => buildQuizQuestion(0, shuffled), 50);
   }, [currentDay, buildQuizQuestion]);
 
@@ -302,7 +297,12 @@ export default function HomePageV2() {
     setQuizAttempts(newAttempts);
     setTimeout(() => {
       if (quizIndex < shuffledQuizWords.length - 1) { setQuizIndex(quizIndex + 1); buildQuizQuestion(quizIndex + 1, shuffledQuizWords); }
-      else { setQuizFinished(true); if (currentDay) saveQuizResult({ dayId: currentDay.id, correctCount: newScore, totalCount: shuffledQuizWords.length, attempts: newAttempts }).catch(() => {}); }
+      else {
+        setQuizFinished(true);
+        setQuizConfetti(true);  // 콘페티 시작
+        setTimeout(() => setQuizConfetti(false), 4000);  // 4초 후 콘페티 종료
+        if (currentDay) saveQuizResult({ dayId: currentDay.id, correctCount: newScore, totalCount: shuffledQuizWords.length, attempts: newAttempts }).catch(() => {});
+      }
     }, 1000);
   };
 
@@ -537,7 +537,7 @@ export default function HomePageV2() {
       )}
 
       {viewMode === 'selftest' && activeGame === 'listen' && currentDay && (
-        <ListenGame
+        <SpellingGame
           words={currentDay.words}
           allWords={allWordsInLevel}
           dayId={currentDay.id}
@@ -588,6 +588,21 @@ export default function HomePageV2() {
             </>
           ) : (
             <div className="v2-result">
+              {/* 파이널테스트 완료 콘페티 */}
+              {quizConfetti && (
+                <div className="quiz-confetti">
+                  {Array.from({ length: 60 }).map((_, i) => (
+                    <i key={i} className="quiz-conf" style={{
+                      left: `${Math.random() * 100}%`,
+                      background: ['#ff5c7a', '#ffd54a', '#36c26a', '#4f8bff', '#b065ff', '#ff9f43'][i % 6],
+                      animationDuration: `${2.5 + Math.random() * 2}s`,
+                      animationDelay: `${Math.random() * 0.8}s`,
+                      ['--dx' as string]: `${Math.random() * 160 - 80}px`,
+                      ['--rot' as string]: `${Math.random() * 720 - 360}deg`,
+                    }} />
+                  ))}
+                </div>
+              )}
               <div className="emoji">{quizScore === shuffledQuizWords.length ? '👑' : quizScore >= shuffledQuizWords.length * 0.8 ? '🎉' : '😊'}</div>
               <div className="score">{quizScore} / {shuffledQuizWords.length}</div>
               <div className="msg">{quizScore === shuffledQuizWords.length ? '완벽해요!' : quizScore >= shuffledQuizWords.length * 0.8 ? '잘했어요!' : '다시 도전해요!'}</div>

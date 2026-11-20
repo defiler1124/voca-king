@@ -1214,3 +1214,32 @@
   box-shadow: 0 2px 4px rgba(0,0,0,.2);
   cursor: pointer;
 }
+
+
+/* ── Quiz Confetti ── */
+.quiz-confetti {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 500;
+  overflow: hidden;
+}
+
+.quiz-conf {
+  position: absolute;
+  top: -20px;
+  width: 10px;
+  height: 14px;
+  border-radius: 2px;
+  animation: quizConf linear forwards;
+}
+
+@keyframes quizConf {
+  to {
+    transform: translateX(var(--dx)) translateY(110vh) rotate(var(--rot));
+  }
+}
+
