@@ -708,12 +708,16 @@ export default function SpellingGame({ words, dayId, onFinish, onBack, onFinalTe
   }, [words.length, miss, dayId, saveProgress]);
 
   // 키보드 이벤트
+  // e.key는 한글 입력 상태면 'ㅁ' 등이 들어오므로 물리 키(e.code: 'KeyA')로 판단 → 한/영 상관없이 입력됨
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (phase === 'type' && /^[a-z]$/i.test(e.key) && !e.ctrlKey && !e.metaKey) {
-        const btn = document.querySelector(`.kb-key[data-c="${e.key.toLowerCase()}"]`) as HTMLButtonElement;
-        handleTypeKey(e.key.toLowerCase(), btn || undefined);
-      }
+      if (phase !== 'type' || e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+      const m = /^Key([A-Z])$/.exec(e.code);
+      const ch = /^[a-z]$/i.test(e.key) ? e.key.toLowerCase() : m ? m[1].toLowerCase() : null;
+      if (!ch) return;
+      e.preventDefault();
+      const btn = document.querySelector(`.kb-key[data-c="${ch}"]`) as HTMLButtonElement;
+      handleTypeKey(ch, btn || undefined);
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
