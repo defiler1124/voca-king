@@ -1684,10 +1684,10 @@ export default function AdminPage() {
                               borderRadius: '12px',
                               fontSize: '12px',
                               fontWeight: 600,
-                              background: p.gameType === 'LISTEN' ? '#E3F2FD' : p.gameType === 'BANANA' ? '#FFF8E1' : '#E8F5E9',
-                              color: p.gameType === 'LISTEN' ? '#1565C0' : p.gameType === 'BANANA' ? '#F9A825' : '#2E7D32'
+                              background: p.gameType === 'FLASH' ? '#EDE7F6' : p.gameType === 'LISTEN' ? '#E3F2FD' : p.gameType === 'BANANA' ? '#FFF8E1' : '#E8F5E9',
+                              color: p.gameType === 'FLASH' ? '#5E35B1' : p.gameType === 'LISTEN' ? '#1565C0' : p.gameType === 'BANANA' ? '#F9A825' : '#2E7D32'
                             }}>
-                              {p.gameType === 'LISTEN' ? '🎧' : p.gameType === 'BANANA' ? '🍌' : '🐻'}
+                              {p.gameType === 'FLASH' ? '📝' : p.gameType === 'LISTEN' ? '🔤' : p.gameType === 'BANANA' ? '🍌' : '🐻'}
                             </span>
                           </td>
                           <td style={{ padding: '12px', textAlign: 'center' }}>{p.score}/{p.totalWords}</td>

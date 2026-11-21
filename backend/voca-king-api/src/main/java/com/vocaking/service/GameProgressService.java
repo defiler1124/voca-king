@@ -64,6 +64,12 @@ public class GameProgressService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다"));
 
+        List<Long> flashCleared = progressRepository
+                .findByUserIdAndGameTypeAndCompletedTrue(user.getId(), GameProgress.GameType.FLASH)
+                .stream()
+                .map(p -> p.getDay().getId())
+                .toList();
+
         List<Long> listenCleared = progressRepository
                 .findByUserIdAndGameTypeAndCompletedTrue(user.getId(), GameProgress.GameType.LISTEN)
                 .stream()
@@ -83,6 +89,7 @@ public class GameProgressService {
                 .toList();
 
         return SummaryResponse.builder()
+                .flashCleared(flashCleared)
                 .listenCleared(listenCleared)
                 .bananaCleared(bananaCleared)
                 .animalCleared(animalCleared)

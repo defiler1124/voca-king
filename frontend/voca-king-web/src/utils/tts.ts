@@ -10,6 +10,14 @@ let audioElement: HTMLAudioElement | null = null;
 let useBackendTts = true;  // 백엔드 TTS 사용 여부
 let voicesLoaded = false;
 
+// 발음 중 배경음악 멈춤 핸들러 (useBgm에서 등록)
+let duckHandler: ((on: boolean) => void) | null = null;
+let speakSeq = 0;
+
+export const setSpeechDuckHandler = (fn: ((on: boolean) => void) | null): void => {
+  duckHandler = fn;
+};
+
 // iOS 감지
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
@@ -201,10 +209,18 @@ const playWithWebSpeech = (text: string): Promise<void> => {
  * 영어 텍스트 발음 재생
  */
 export const speak = async (text: string): Promise<void> => {
-  if (useBackendTts) {
-    return playWithBackendTts(text);
+  const my = ++speakSeq;
+  duckHandler?.(true);
+  try {
+    if (useBackendTts) {
+      await playWithBackendTts(text);
+    } else {
+      await playWithWebSpeech(text);
+    }
+  } finally {
+    // 연속 발음 중에는 마지막 발음이 끝날 때만 음악 복귀
+    if (my === speakSeq) duckHandler?.(false);
   }
-  return playWithWebSpeech(text);
 };
 
 /**
@@ -218,6 +234,8 @@ export const stopSpeaking = (): void => {
   if ('speechSynthesis' in window) {
     window.speechSynthesis.cancel();
   }
+  speakSeq++;
+  duckHandler?.(false);
 };
 
 /**

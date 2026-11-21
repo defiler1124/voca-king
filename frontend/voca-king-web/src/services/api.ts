@@ -68,6 +68,7 @@ export const getCurrentUser = async (): Promise<User> => {
 // ==================== 게임 진도 API ====================
 
 export interface GameProgressSummary {
+  flashCleared: number[];
   listenCleared: number[];
   bananaCleared: number[];
   animalCleared: number[];
@@ -75,7 +76,7 @@ export interface GameProgressSummary {
 
 export interface SaveProgressRequest {
   dayId: number;
-  gameType: 'LISTEN' | 'BANANA' | 'ANIMAL';
+  gameType: 'FLASH' | 'BANANA' | 'ANIMAL' | 'LISTEN';
   score: number;
   totalWords: number;
   stars: number;

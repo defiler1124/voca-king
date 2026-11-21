@@ -36,7 +36,7 @@ public class GameProgress {
     private Day day;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "game_type", nullable = false, length = 20)
+    @Column(name = "game_type", nullable = false, length = 20, columnDefinition = "varchar(20)")
     private GameType gameType;
 
     @Column(nullable = false)
@@ -66,8 +66,9 @@ public class GameProgress {
      * 게임 타입
      */
     public enum GameType {
-        LISTEN,   // 발음연습 (Stage 1)
+        FLASH,    // 플래시카드 (Stage 1)
         BANANA,   // 바나나 게임 (Stage 2)
-        ANIMAL    // 동물 구출 (Stage 3)
+        ANIMAL,   // 동물 구출 (Stage 3)
+        LISTEN    // 스펠링 연습 (Stage 4, 구 듣고고르기)
     }
 }

@@ -15,6 +15,7 @@ import BananaGame from '../components/v2/BananaGame';
 import AnimalGame from '../components/v2/AnimalGame';
 import SpellingGame from '../components/v2/SpellingGame';
 import { useBgm } from '../hooks/useBgm';
+import bananaImg from '../assets/banana.png';
 import '../styles/v2-theme.css';
 
 // Audio context for quiz sound effects
@@ -67,6 +68,7 @@ type ViewMode = 'cards' | 'selftest' | 'final';
 type GameType = 'flash' | 'match' | 'pop' | 'listen' | null;
 
 // SVG 아이콘 컴포넌트들
+// 원본 아이콘 - 플래시카드
 const FlashIcon = () => (
   <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" width="48" height="48">
     <rect x="10" y="14" width="34" height="42" rx="7" transform="rotate(-12 27 35)" fill="#9aa0ff" stroke="#6b72d6" strokeWidth="2"/>
@@ -76,16 +78,72 @@ const FlashIcon = () => (
   </svg>
 );
 
+// 원본 아이콘 - 스펠링 (키보드 블록)
 const SpellingIcon = () => (
-  <span style={{ fontSize: '38px', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px' }}>🔤</span>
+  <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" width="48" height="48">
+    <rect x="5" y="16" width="54" height="34" rx="8" fill="#fff" stroke="#2f7fa8" strokeWidth="2.5"/>
+    <g fill="#4cc2e8" stroke="#2f7fa8" strokeWidth="1.5">
+      <rect x="11" y="22" width="8" height="8" rx="2"/>
+      <rect x="22" y="22" width="8" height="8" rx="2"/>
+      <rect x="33" y="22" width="8" height="8" rx="2"/>
+      <rect x="44" y="22" width="8" height="8" rx="2"/>
+    </g>
+    <g fill="#ffd54a" stroke="#d99a00" strokeWidth="1.5">
+      <rect x="15" y="34" width="8" height="8" rx="2"/>
+      <rect x="38" y="34" width="8" height="8" rx="2"/>
+    </g>
+    <rect x="25" y="34" width="11" height="8" rx="2" fill="#ff8aa0" stroke="#c9486a" strokeWidth="1.5"/>
+  </svg>
 );
 
+// 원본 아이콘 - 바나나 (PNG)
 const BananaIcon = () => (
-  <span style={{ fontSize: '38px', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px' }}>🍌</span>
+  <div style={{ width: 48, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <img
+      src={bananaImg}
+      alt="banana"
+      style={{ width: 42, height: 'auto', filter: 'drop-shadow(0 3px 2px rgba(0,0,0,.25))' }}
+    />
+  </div>
 );
 
+// 원본 아이콘 - 곰 (animalSVG bear idle)
 const BearIcon = () => (
-  <span style={{ fontSize: '38px', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px' }}>🐻</span>
+  <svg viewBox="0 -10 100 100" xmlns="http://www.w3.org/2000/svg" width="48" height="48">
+    <defs>
+      <linearGradient id="bear-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stopColor="#c9956a"/>
+        <stop offset="100%" stopColor="#b5835a"/>
+      </linearGradient>
+    </defs>
+    {/* 왼쪽 귀 */}
+    <circle cx="24" cy="38" r="11.5" fill="url(#bear-grad)" stroke="#6f4a2a" strokeWidth="2" strokeLinejoin="round"/>
+    <circle cx="24" cy="39" r="6" fill="#e9bfa0"/>
+    {/* 오른쪽 귀 */}
+    <circle cx="76" cy="38" r="11.5" fill="url(#bear-grad)" stroke="#6f4a2a" strokeWidth="2" strokeLinejoin="round"/>
+    <circle cx="76" cy="39" r="6" fill="#e9bfa0"/>
+    {/* 얼굴 */}
+    <ellipse cx="50" cy="62" rx="34" ry="30" fill="url(#bear-grad)" stroke="#6f4a2a" strokeWidth="2" strokeLinejoin="round"/>
+    {/* 하이라이트 */}
+    <ellipse cx="37" cy="45" rx="11" ry="5" transform="rotate(-24 37 45)" fill="#fff" opacity=".35"/>
+    {/* 코 주변 */}
+    <ellipse cx="50" cy="74" rx="13.5" ry="9.8" fill="#f1d9b5" stroke="#d4b590" strokeWidth="1"/>
+    {/* 코 */}
+    <ellipse cx="50" cy="69.5" rx="4.8" ry="3.4" fill="#3b2a1e"/>
+    <ellipse cx="48.6" cy="68.3" rx="1.7" ry="0.9" fill="#fff" opacity=".75"/>
+    {/* 눈 */}
+    <ellipse cx="38" cy="60" rx="4.8" ry="5.4" fill="#2b1d14"/>
+    <circle cx="36.5" cy="58" r="1.8" fill="#fff"/>
+    <ellipse cx="62" cy="60" rx="4.8" ry="5.4" fill="#2b1d14"/>
+    <circle cx="60.5" cy="58" r="1.8" fill="#fff"/>
+    {/* 입 */}
+    <path d="M44 78 Q50 84 56 78" stroke="#2b1d14" strokeWidth="2.4" fill="none" strokeLinecap="round"/>
+    {/* 볼터치 */}
+    <ellipse cx="27" cy="73" rx="6.5" ry="4.6" fill="#ffb5b5" opacity=".5"/>
+    <ellipse cx="73" cy="73" rx="6.5" ry="4.6" fill="#ffb5b5" opacity=".5"/>
+    {/* 별 */}
+    <path d="M70 30 l2.2 4.6 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7z" fill="#ffd54a" stroke="#d9a400" strokeWidth="1"/>
+  </svg>
 );
 
 const STAGE_ICONS: Record<string, React.FC> = {
@@ -116,10 +174,12 @@ export default function HomePageV2() {
 
   // 진도 스토어 (DB 저장)
   const {
+    flashCleared: flashClearedArr,
     listenCleared: listenClearedArr,
     bananaCleared: bananaClearedArr,
     animalCleared: animalClearedArr,
     fetchProgress,
+    saveProgress,
     isLoaded: progressLoaded
   } = useProgressStore();
 
@@ -140,14 +200,8 @@ export default function HomePageV2() {
   const [showMusicPanel, setShowMusicPanel] = useState(false);
   const [seenCards, setSeenCards] = useState<Set<number>>(new Set());
   const [flashReplaying, setFlashReplaying] = useState(false); // 다시하기 모드
-  const [flashClearedDays, setFlashClearedDays] = useState<Set<number>>(() => {
-    try {
-      const saved = localStorage.getItem('voca-king-flash-cleared');
-      return saved ? new Set(JSON.parse(saved)) : new Set();
-    } catch { return new Set(); }
-  });
   // 진도 데이터는 progressStore에서 관리 (DB 저장)
-  // bananaClearedArr, animalClearedArr, listenClearedArr 사용
+  // flashClearedArr, bananaClearedArr, animalClearedArr, listenClearedArr 사용
 
   const dayScrollRef = useRef<HTMLDivElement>(null);
   const levelScrollRef = useRef<HTMLDivElement>(null);
@@ -161,22 +215,17 @@ export default function HomePageV2() {
   const bgmStartRef = useRef(bgm.start);
   bgmStartRef.current = bgm.start;
 
-  // 첫 클릭 시 배경음악 자동 재생 (브라우저 정책상 사용자 상호작용 필요)
+  // 첫 터치/클릭 시 배경음악 자동 재생 (브라우저 정책상 사용자 상호작용 필요)
+  // touchstart는 모바일에서 재생 허용 제스처로 인정되지 않으므로 touchend/pointerup 사용 (원본과 동일)
   useEffect(() => {
-    let started = false;
-    const startBgmOnFirstClick = () => {
-      if (!started) {
-        started = true;
-        bgmStartRef.current();
-      }
-      document.removeEventListener('click', startBgmOnFirstClick);
-      document.removeEventListener('touchstart', startBgmOnFirstClick);
+    const events = ['pointerup', 'touchend', 'click', 'keydown'];
+    const startBgmOnFirstGesture = () => {
+      events.forEach(e => document.removeEventListener(e, startBgmOnFirstGesture, true));
+      bgmStartRef.current();
     };
-    document.addEventListener('click', startBgmOnFirstClick);
-    document.addEventListener('touchstart', startBgmOnFirstClick);
+    events.forEach(e => document.addEventListener(e, startBgmOnFirstGesture, true));
     return () => {
-      document.removeEventListener('click', startBgmOnFirstClick);
-      document.removeEventListener('touchstart', startBgmOnFirstClick);
+      events.forEach(e => document.removeEventListener(e, startBgmOnFirstGesture, true));
     };
   }, []);
 
@@ -203,23 +252,37 @@ export default function HomePageV2() {
     }
   }, [activeGame, user, fetchProgress]);
 
+  // 기존 localStorage 플래시카드 클리어 기록 → DB로 1회 이전
+  useEffect(() => {
+    if (!user || !progressLoaded) return;
+    let legacy: number[] = [];
+    try { legacy = JSON.parse(localStorage.getItem('voca-king-flash-cleared') || '[]'); } catch { /* ignore */ }
+    const pending = legacy.filter(dayId => !flashClearedArr.includes(dayId));
+    Promise.allSettled(pending.map(dayId => saveProgress({
+      dayId, gameType: 'FLASH', score: 0, totalWords: 0, stars: 1, clearTime: 0,
+    }))).then(() => {
+      try { localStorage.removeItem('voca-king-flash-cleared'); } catch { /* ignore */ }
+    });
+  }, [user, progressLoaded]);
+
   // 현재 Day의 클리어 여부 (DB 기반)
-  const flashCleared = currentDay ? (seenCards.size >= currentDay.words.length || flashClearedDays.has(currentDay.id)) : false;
+  const flashCleared = currentDay ? (seenCards.size >= currentDay.words.length || flashClearedArr.includes(currentDay.id)) : false;
   const bananaCleared = currentDay ? bananaClearedArr.includes(currentDay.id) : false;
   const animalCleared = currentDay ? animalClearedArr.includes(currentDay.id) : false;
   const listenCleared = currentDay ? listenClearedArr.includes(currentDay.id) : false;
 
-  // 모든 카드를 보면 클리어 상태 저장 + 다시하기 모드 해제
+  // 모든 카드를 보면 클리어 상태 DB 저장 + 다시하기 모드 해제
   useEffect(() => {
-    if (currentDay && seenCards.size >= currentDay.words.length) {
-      if (!flashClearedDays.has(currentDay.id)) {
-        const newSet = new Set(flashClearedDays).add(currentDay.id);
-        setFlashClearedDays(newSet);
-        localStorage.setItem('voca-king-flash-cleared', JSON.stringify([...newSet]));
+    if (currentDay && currentDay.words.length > 0 && seenCards.size >= currentDay.words.length) {
+      if (!flashClearedArr.includes(currentDay.id)) {
+        saveProgress({
+          dayId: currentDay.id, gameType: 'FLASH',
+          score: currentDay.words.length, totalWords: currentDay.words.length, stars: 1, clearTime: 0,
+        }).catch(e => console.error('Failed to save flash progress', e));
       }
       setFlashReplaying(false); // 다시하기 완료
     }
-  }, [seenCards.size, currentDay, flashClearedDays]);
+  }, [seenCards.size, currentDay, flashClearedArr, saveProgress]);
 
   // 바나나 게임 클리어 핸들러 (시간 내 완주 시 클리어)
   const handleBananaFinish = useCallback((_score: number, _total: number) => {
@@ -438,16 +501,11 @@ export default function HomePageV2() {
         <div className="v2-word-scroll">
           <div className="v2-hub-desc">플래시카드로 익히고, 3개 스테이지는 제한 시간 안에 클리어!</div>
           <div className="v2-hub-grid">
-            {GAME_STAGES.map((stage) => {
-              const isCleared = (stage.id === 'flash' && flashCleared) ||
-                                (stage.id === 'match' && bananaCleared) ||
-                                (stage.id === 'pop' && animalCleared) ||
-                                (stage.id === 'listen' && listenCleared);
-              // 이미 클리어한 스테이지는 절대 잠기지 않음
-              const isLocked = !isCleared && (
-                               (stage.id === 'match' && !flashCleared) ||
-                               (stage.id === 'pop' && !bananaCleared) ||
-                               (stage.id === 'listen' && !animalCleared));
+            {GAME_STAGES.map((stage, i) => {
+              const clearedList = [flashCleared, bananaCleared, animalCleared, listenCleared];
+              const isCleared = clearedList[i];
+              // 원본 정책: 앞 스테이지가 모두 클리어되어야 열림 (이미 클리어한 스테이지는 잠기지 않음)
+              const isLocked = !isCleared && !clearedList.slice(0, i).every(Boolean);
               const IconComponent = STAGE_ICONS[stage.id];
               return (
                 <button

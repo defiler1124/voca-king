@@ -20,7 +20,7 @@ public class GameProgressDto {
     @AllArgsConstructor
     public static class SaveRequest {
         private Long dayId;
-        private String gameType;  // LISTEN, BANANA, ANIMAL
+        private String gameType;  // FLASH, BANANA, ANIMAL, LISTEN
         private Integer score;
         private Integer totalWords;
         private Integer stars;
@@ -74,6 +74,7 @@ public class GameProgressDto {
     @AllArgsConstructor
     @Builder
     public static class SummaryResponse {
+        private List<Long> flashCleared;
         private List<Long> listenCleared;
         private List<Long> bananaCleared;
         private List<Long> animalCleared;
