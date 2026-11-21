@@ -320,7 +320,7 @@ git push -u origin main
 # VOCA KING V2 리뉴얼 로드맵
 
 > **목표**: 기존 서비스에 영향 없이 새로운 UI/UX와 게임형 학습 기능 추가
-> **참조**: `VOCAKING_v6_파이널효과음.html`
+> **참조**: `VOCAKING_v8_11_16_스펠링추가.html`
 
 ---
 
@@ -566,6 +566,6 @@ frontend/voca-king-web/src/
 
 ## 참조 파일
 
-- **디자인 참조**: `/Users/yunkh7/Downloads/VOCAKING_v6_파이널효과음.html`
+- **디자인 참조**: `/Users/yunkh7/Downloads/VOCAKING_v8_11_16_스펠링추가.html`
 - **프로젝트 가이드**: `CLAUDE.md`
 - **현재 메인 페이지**: `frontend/voca-king-web/src/pages/HomePage.tsx`
